@@ -8,6 +8,9 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Card
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Arrangement
@@ -23,39 +26,63 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.example.splitmoney.data.SplitMoney
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.style.TextAlign
 import com.example.splitmoney.ui.theme.SplitMoneyTheme
+import androidx.compose.foundation.gestures.snapping.SnapPosition.Center
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.graphics.BlendMode
 
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    items: List<SplitMoney>,
+    onItemClick: (SplitMoney) -> Unit
+) {
     Box(modifier = Modifier.fillMaxSize()){
     Column(
         modifier = Modifier
             .fillMaxSize()
     )
     {
-        Column(modifier = Modifier.weight(1f)
-        ) {
-            Text(
-                text = "SplitMO",
-                fontSize = 30.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
+        Text(
+            text = "SplitMO",
+            fontSize = 30.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF42EFC4))
+                .padding(16.dp)
+
+        )
+        LazyColumn(modifier = Modifier.weight(1f)) {
+            items(items) { item ->
+                Card(modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF42EFC4))
-                    .padding(16.dp)
-            )
+                    .padding(20.dp)
+                    .height(80.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF42EFC4))
+                ) {
+                    Text(
+                        text = item.name,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 28.dp, start = 8.dp)
+                    )
+                }
+            }
         }
         Row(
             modifier = Modifier
@@ -101,5 +128,8 @@ fun MainScreen() {
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
-    MainScreen()
+    val sampleData = listOf(
+        SplitMoney(id="1", name="Dinner", members = mutableListOf("Alice", "Bob"))
+    )
+    MainScreen(items = sampleData, onItemClick ={} )
 }
