@@ -10,27 +10,18 @@ import com.example.splitmoney.data.SplitMoney
 class GroupsViewModel : ViewModel(){
     private val _groups = mutableStateListOf<SplitMoney>()
     val groups: List<SplitMoney> = _groups
-    var showAddDialog by mutableStateOf(false)
-        private set
-    var newGroupName by mutableStateOf("")
-        private set
-    fun openAddDialog() {
-        showAddDialog = true
-    }
-    fun closeAddDialog() {
-        showAddDialog = false
-        newGroupName = ""
-    }
+
+
+
     fun addGroup(name : String) {
-        if (newGroupName.isNotBlank()) {
+        if (name.isNotBlank()) {
             _groups.add(
                 SplitMoney(
                     id = (_groups.size + 1).toString(),
-                    name = newGroupName,
+                    name = name,
                     members = mutableListOf()
                 )
             )
-            closeAddDialog()
         }
     }
 }

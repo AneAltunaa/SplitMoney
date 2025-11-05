@@ -43,8 +43,6 @@ import com.example.splitmoney.viewModels.GroupsViewModel
 @Composable
 fun MainScreen(
     viewModel: GroupsViewModel,
-//    items: List<SplitMoney>,
-//    onItemClick: (SplitMoney) -> Unit,
     onAddGroupClick: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()){
