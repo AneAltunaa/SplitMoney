@@ -78,13 +78,12 @@ fun MainScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = item.name,
+                            text = "${item.name} (${item.currency})",
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Serif,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(12.dp)
-
                         )
                         Icon(
                             imageVector = Icons.Filled.ArrowForwardIos,

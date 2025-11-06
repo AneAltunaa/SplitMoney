@@ -61,8 +61,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -78,6 +81,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontStyle
+import com.example.splitmoney.data.Person
 
 @Composable
 fun CurrencySelector(
@@ -138,12 +142,12 @@ fun CurrencySelector(
 fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    label: String
+    label: String,
+    modifier: Modifier = Modifier
 ) {
 
     Box(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(top = 10.dp, bottom = 20.dp, start = 16.dp, end = 16.dp)
             .border(
                 width = 2.dp,
@@ -178,13 +182,17 @@ fun CustomTextField(
 fun AddGroupScreen(viewModel: GroupsViewModel, onBack: () -> Unit) {
 
     var groupName by remember { mutableStateOf("") }
+    var memberName by remember { mutableStateOf("") }
+    val members = remember { mutableStateListOf<Person>() }
+    var description by remember { mutableStateOf("") }
     var selectedCurrency by remember { mutableStateOf("EUR") }
     val currencies = listOf("USD", "EUR", "GBP", "JPY", "AUD", "DKK")
 
 
 
-    Column(modifier = Modifier
-        .fillMaxSize()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
     ) {
         Text(
             text = "New Group",
@@ -210,11 +218,27 @@ fun AddGroupScreen(viewModel: GroupsViewModel, onBack: () -> Unit) {
                 .padding(top = 20.dp, start = 26.dp)
         )
 
-            CustomTextField(
-                value = groupName,
-                onValueChange = { groupName = it },
-                label = "Group Name"
-            )
+        CustomTextField(
+            value = groupName,
+            onValueChange = { groupName = it },
+            label = "Group Name"
+        )
+        Text(
+            text = "Description",
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = FontFamily.Serif,
+            fontSize = 15.sp,
+            fontStyle = FontStyle.Italic,
+            textAlign = TextAlign.Start,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 26.dp)
+        )
+        CustomTextField(
+            value = description,
+            onValueChange = { description = it },
+            label = "Description",
+        )
         Text(
             text = "Choose currency",
             fontWeight = FontWeight.SemiBold,
@@ -242,11 +266,76 @@ fun AddGroupScreen(viewModel: GroupsViewModel, onBack: () -> Unit) {
                 .fillMaxWidth()
                 .padding(start = 26.dp)
         )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+                    .border(
+                        width = 2.dp,
+                        color = Color(0xFF42EFC4),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .background(Color.White, shape = RoundedCornerShape(20.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                if (memberName.isEmpty()) {
+                    Text(
+                        text = "Member Name",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                }
+                BasicTextField(
+                    value = memberName,
+                    onValueChange = { memberName = it },
+                    singleLine = true,
+                    textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+
+            Button(
+                onClick = {
+                    if (memberName.isNotBlank()) {
+                        members.add(Person(memberName))
+                        memberName = ""
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF42EFC4),
+                    contentColor = Color.Black
+                ),
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Text("Add")
+            }
+
+        }
+        Column(modifier = Modifier.padding(start = 26.dp)) {
+            members.forEach { member ->
+                Text(
+                    text = "• ${member.name}",
+                    color = Color.DarkGray,
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(vertical = 2.dp)
+                )
+            }
+        }
         Button(
             onClick = {
                 if (groupName.isNotBlank()) {
-                    viewModel.addGroup(groupName)
+                    viewModel.addGroup(groupName, description, selectedCurrency, members)
                     onBack()
                 }
             },
@@ -261,17 +350,18 @@ fun AddGroupScreen(viewModel: GroupsViewModel, onBack: () -> Unit) {
             Text("Add")
         }
 
-        Button(onClick = { onBack() },
+        Button(
+            onClick = { onBack() },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF42EFC4),
                 contentColor = Color.Black
             ),
-            modifier = Modifier.padding(top = 8.dp)) {
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
             Text("Cancel")
         }
     }
 }
-
 
 
 @Preview(showBackground = true)

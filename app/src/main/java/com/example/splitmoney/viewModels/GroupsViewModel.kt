@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.splitmoney.data.Person
 import com.example.splitmoney.data.SplitMoney
 
 class GroupsViewModel : ViewModel(){
@@ -13,13 +14,15 @@ class GroupsViewModel : ViewModel(){
 
 
 
-    fun addGroup(name : String) {
+    fun addGroup(name : String, description: String, currency: String, members: List<Person>) {
         if (name.isNotBlank()) {
             _groups.add(
                 SplitMoney(
                     id = (_groups.size + 1).toString(),
                     name = name,
-                    members = mutableListOf()
+                    description = description,
+                    currency = currency,
+                    members = members.toMutableList()
                 )
             )
         }
