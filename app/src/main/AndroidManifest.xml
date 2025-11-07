@@ -21,6 +21,10 @@
             android:exported="true" />
 
         <activity
+            android:name=".views.RegisterActivity"
+            android:exported="true" />
+
+        <activity
             android:name=".views.FirstPageActivity"
             android:exported="true"
             android:label="@string/app_name"

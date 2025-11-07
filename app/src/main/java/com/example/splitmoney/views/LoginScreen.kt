@@ -28,12 +28,17 @@ class LoginActivity : ComponentActivity() {
             LoginScreen(onLogin = { email, password ->//pass parameters when we have them
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
+            },
+            onRegister = {
+                startActivity(Intent(this, RegisterActivity::class.java))
+                finish()
             })
+
         }
     }
 }
 @Composable
-fun LoginScreen(onLogin: (email: String, password: String) -> Unit){
+fun LoginScreen(onLogin: (email: String, password: String) -> Unit, onRegister: () -> Unit){
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -49,6 +54,9 @@ fun LoginScreen(onLogin: (email: String, password: String) -> Unit){
         Spacer(modifier = Modifier.height(height = 16.dp))
         TextField(value=password, onValueChange = {password = it}, label={Text(text = "Password")}, visualTransformation = PasswordVisualTransformation())
         Button(onClick = {onLogin(email, password)}) { Text("SplitMo")}
+
+        Text(text= "Don't have an account: ")
+        Button(onClick = { onRegister() }) { Text("Register")}
 
 
     }
