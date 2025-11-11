@@ -1,5 +1,6 @@
 package com.example.splitmoney.views
 
+import android.content.Intent
 import androidx.compose.material.icons.Icons
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.IconButton
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +39,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.ui.platform.LocalContext
 import com.example.splitmoney.viewModels.GroupsViewModel
 
 
@@ -44,7 +47,8 @@ import com.example.splitmoney.viewModels.GroupsViewModel
 fun MainScreen(
     viewModel: GroupsViewModel,
     onAddGroupClick: () -> Unit
-) {
+)
+{
     Box(modifier = Modifier.fillMaxSize()){
     Column(
         modifier = Modifier
@@ -106,12 +110,18 @@ fun MainScreen(
             verticalAlignment = Alignment.CenterVertically
         )
         {
+            val context = LocalContext.current
+
             Icon(imageVector = Icons.Filled.Home, contentDescription = "Home", tint = Color.Black)
 
             Icon(
-                    imageVector = Icons.Filled.AccountCircle,
-            contentDescription = "Account",
-            tint = Color.Black,
+                imageVector = Icons.Filled.AccountCircle,
+                contentDescription = "Account",
+                tint = Color.Black,
+                modifier = Modifier.clickable {
+                    context.startActivity(Intent(context, UserProfileActivity::class.java))
+                }
+
             )
             Icon(
                 imageVector = Icons.Filled.Settings,

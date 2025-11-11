@@ -1,5 +1,6 @@
 package com.example.splitmoney.views
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,6 +10,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,9 +36,25 @@ class RegisterActivity : ComponentActivity() {
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             })
+            BackLogin(this)
         }
     }
 }
+
+@Composable
+fun BackLogin(activity: Activity) {
+    IconButton(
+        onClick = { activity.finish() },
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Filled.ArrowBack,
+            contentDescription = "Previous page",
+            tint = Color.Black
+        )
+    }
+}
+
 @Composable
 fun RegisterScreen(onLogin: (email: String, password: String) -> Unit){
 
@@ -43,34 +63,52 @@ fun RegisterScreen(onLogin: (email: String, password: String) -> Unit){
     var name by remember { mutableStateOf("") }
     var surname by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
+    var reenterPass by remember { mutableStateOf("") }
 
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color(0xFF42EFC4))
-    ){
-        Box(modifier = Modifier
-            .background(Color(0xFFFFFFFF))){
-        Column(
-            modifier = Modifier.fillMaxSize().padding(all=16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF42EFC4))
+    ) {
+        Text(text = "SnapRec", style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding( 50.dp)
+                .background(Color(0xFFFFFFFF), RoundedCornerShape(16.dp))
+
         ){
-            Text(text = "SplitMo", style= MaterialTheme.typography.headlineLarge)
-            Spacer(modifier = Modifier.height(height = 16.dp))
-            TextField(value=name, onValueChange = { name = it }, label={Text(text = "Name")})
-            Spacer(modifier = Modifier.height(height = 16.dp))
-            TextField(value=surname, onValueChange = { surname = it }, label={Text(text = "Surname")})
-            Spacer(modifier = Modifier.height(height = 16.dp))
-            TextField(value=email, onValueChange = { email = it }, label={Text(text = "Email")})
-            Spacer(modifier = Modifier.height(height = 16.dp))
-            TextField(value=phoneNumber, onValueChange = { phoneNumber = it }, label={Text(text = "Phone Number")})
-            Spacer(modifier = Modifier.height(height = 16.dp))
-            TextField(value=password, onValueChange = {password = it}, label={Text(text = "Password")}, visualTransformation = PasswordVisualTransformation())
-            Button(onClick = {onLogin(email, password)}) { Text("Register")}
+            Column(
+                modifier = Modifier.fillMaxSize().padding(all = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(text = "Register", style = MaterialTheme.typography.headlineLarge)
+
+                TextField(value=name, onValueChange = { name = it }, label={Text(text = "Name")})
+
+                TextField(value=surname, onValueChange = { surname = it }, label={Text(text = "Surname")})
+
+                TextField(value=email, onValueChange = { email = it }, label={Text(text = "Email")})
+
+                TextField(value=phoneNumber, onValueChange = { phoneNumber = it }, label={Text(text = "Phone Number")})
+
+                TextField(value=password, onValueChange = {password = it}, label={Text(text = "Password")}, visualTransformation = PasswordVisualTransformation())
+                TextField(value=reenterPass, onValueChange = {password = it}, label={Text(text = "Re-Enter Password")}, visualTransformation = PasswordVisualTransformation())
+                Button(onClick = {onLogin(email, password)},
+                    colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF42EFC4),
+                    contentColor = Color.Black
+                ),
+                    shape = RoundedCornerShape(16.dp)) { Text("Register")}
+            }
 
         }
     }
-    }
+
 
 }

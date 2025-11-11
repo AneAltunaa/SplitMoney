@@ -55,8 +55,8 @@ fun FirstScreen(onOpen: () -> Unit){
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ){
-        Text(text = "SplitMo", style= MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, textDecoration = TextDecoration.Underline, fontSize = 45.sp)
-        Text(text = "Trip Savings App")
+        Text(text = "SnapRec", style= MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, textDecoration = TextDecoration.Underline, fontSize = 45.sp)
+        Text(text = "Receipt Approval App")
     }}
 
 }
