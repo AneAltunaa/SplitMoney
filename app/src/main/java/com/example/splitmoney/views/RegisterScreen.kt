@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
 import com.example.splitmoney.MainActivity
 
 //Change everything so it is a register page/not login
@@ -44,12 +45,15 @@ class RegisterActivity : ComponentActivity() {
 @Composable
 fun BackLogin(activity: Activity) {
     IconButton(
-        onClick = { activity.finish() },
+        onClick = {
+            val intent = Intent(activity, LoginActivity::class.java)
+            activity.startActivity(intent)
+            activity.finish() },
         modifier = Modifier.padding(8.dp)
     ) {
         Icon(
             imageVector = Icons.Filled.ArrowBack,
-            contentDescription = "Previous page",
+            contentDescription = "Previous page - login",
             tint = Color.Black
         )
     }
@@ -89,16 +93,16 @@ fun RegisterScreen(onLogin: (email: String, password: String) -> Unit){
             ) {
                 Text(text = "Register", style = MaterialTheme.typography.headlineLarge)
 
-                TextField(value=name, onValueChange = { name = it }, label={Text(text = "Name")})
+                CustomTextField(value=name, onValueChange = { name = it }, label= "Name")
 
-                TextField(value=surname, onValueChange = { surname = it }, label={Text(text = "Surname")})
+                CustomTextField(value=surname, onValueChange = { surname = it }, label="Surname")
 
-                TextField(value=email, onValueChange = { email = it }, label={Text(text = "Email")})
+                CustomTextField(value=email, onValueChange = { email = it }, label="Email")
 
-                TextField(value=phoneNumber, onValueChange = { phoneNumber = it }, label={Text(text = "Phone Number")})
+                CustomTextField(value=phoneNumber, onValueChange = { phoneNumber = it }, label="Phone Number")
 
-                TextField(value=password, onValueChange = {password = it}, label={Text(text = "Password")}, visualTransformation = PasswordVisualTransformation())
-                TextField(value=reenterPass, onValueChange = {password = it}, label={Text(text = "Re-Enter Password")}, visualTransformation = PasswordVisualTransformation())
+                CustomTextField(value=password, onValueChange = {password = it}, label= "Password")//, visualTransformation = PasswordVisualTransformation())
+                CustomTextField(value=reenterPass, onValueChange = {password = it}, label="Re-Enter Password")//, visualTransformation = PasswordVisualTransformation())
                 Button(onClick = {onLogin(email, password)},
                     colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF42EFC4),

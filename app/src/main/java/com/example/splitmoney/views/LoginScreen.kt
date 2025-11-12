@@ -51,7 +51,10 @@ class LoginActivity : ComponentActivity() {
 @Composable
 fun BackFirstPage(activity: Activity) {
     IconButton(
-        onClick = { activity.finish() },
+        onClick = {
+            val intent = Intent(activity, FirstPageActivity::class.java)
+            activity.startActivity(intent)
+            activity.finish() },
         modifier = Modifier.padding(8.dp)
     ) {
         Icon(
@@ -90,15 +93,16 @@ fun LoginScreen(onLogin: (email: String, password: String) -> Unit, onRegister: 
             verticalArrangement = Arrangement.Center
         ) {
             Text(text = "Login", style = MaterialTheme.typography.headlineLarge)
-            TextField(
+            CustomTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text(text = "Email") })
-            TextField(
+                label =  "Email")
+
+            CustomTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text(text = "Password") },
-                visualTransformation = PasswordVisualTransformation()
+                label = "Password",
+                //visualTransformation = PasswordVisualTransformation()
             )
             Button(onClick = { onLogin(email, password) },
                 colors = ButtonDefaults.buttonColors(

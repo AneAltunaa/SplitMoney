@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -76,18 +77,18 @@ fun UserProfileScreen(){
         )
         {
 
-                Text(
-                    text = "SnapRec",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 30.sp,
-                    textAlign = TextAlign.Center,
-                    fontFamily = FontFamily.Serif,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF42EFC4))
-                        .padding(16.dp)
+            Text(
+                text = "SnapRec",
+                fontWeight = FontWeight.Bold,
+                fontSize = 30.sp,
+                textAlign = TextAlign.Center,
+                fontFamily = FontFamily.Serif,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF42EFC4))
+                    .padding(16.dp)
 
-                )
+            )
 
 
             Box(modifier = Modifier.border(width = 0.5.dp, color = Color(0xFF42EFC4))){
@@ -109,14 +110,64 @@ fun UserProfileScreen(){
                         )
 
                     )
-
-                    Text(text = "Name:", style = MaterialTheme.typography.headlineLarge, fontSize = 12.sp)
-                    Text(text = "Last name:", style = MaterialTheme.typography.headlineLarge, fontSize = 12.sp)
-                    Text(text = "Date of Birth:", style = MaterialTheme.typography.headlineLarge, fontSize = 12.sp)
+                    Text(
+                        text = "Name",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 15.sp,
+                        fontStyle = FontStyle.Italic,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp, start = 26.dp)
+                    )
+                    Text(
+                        text = "Last name",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 15.sp,
+                        fontStyle = FontStyle.Italic,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp, start = 26.dp)
+                    )
+                    Text(
+                        text = "Date of birth",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 15.sp,
+                        fontStyle = FontStyle.Italic,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp, start = 26.dp)
+                    )
 
                     Spacer(modifier = Modifier.height(height = 50.dp))
-                    Text(text = "Mail:", style = MaterialTheme.typography.headlineLarge, fontSize = 12.sp)
-                    Text(text = "Phone Number:", style = MaterialTheme.typography.headlineLarge, fontSize = 12.sp)
+
+                    Text(
+                        text = "Mail",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 15.sp,
+                        fontStyle = FontStyle.Italic,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp, start = 26.dp)
+                    )
+                    Text(
+                        text = "Phone number",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 15.sp,
+                        fontStyle = FontStyle.Italic,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp, start = 26.dp)
+                    )
 
                     Spacer(modifier = Modifier.height(height = 50.dp))
                     Button(onClick = {}, colors = ButtonDefaults.buttonColors(
