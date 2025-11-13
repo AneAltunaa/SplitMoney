@@ -50,22 +50,27 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun BackFirstPage(activity: Activity) {
+    val colors = MaterialTheme.colorScheme
+
     IconButton(
         onClick = {
             val intent = Intent(activity, FirstPageActivity::class.java)
             activity.startActivity(intent)
-            activity.finish() },
+            activity.finish()
+        },
         modifier = Modifier.padding(8.dp)
     ) {
         Icon(
             imageVector = Icons.Filled.ArrowBack,
             contentDescription = "Previous page",
-            tint = Color.Black
+            tint = colors.onPrimary
         )
     }
 }
+
 @Composable
 fun LoginScreen(onLogin: (email: String, password: String) -> Unit, onRegister: () -> Unit){
+    val colors = MaterialTheme.colorScheme
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -73,54 +78,69 @@ fun LoginScreen(onLogin: (email: String, password: String) -> Unit, onRegister: 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF42EFC4))
+            .background(colors.primary)
     ) {
 
-        Text(text = "SnapRec", style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier
-            .align(Alignment.TopCenter)
-            )
+        Text(
+            text = "SnapRec",
+            style = MaterialTheme.typography.headlineLarge,
+            color = colors.onPrimary,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding( 50.dp)
-                .background(Color(0xFFFFFFFF), RoundedCornerShape(16.dp))
-
-        ){
-        Column(
-            modifier = Modifier.fillMaxSize().padding(all = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(50.dp)
+                .background(colors.surface, RoundedCornerShape(16.dp))
         ) {
-            Text(text = "Login", style = MaterialTheme.typography.headlineLarge)
-            CustomTextField(
-                value = email,
-                onValueChange = { email = it },
-                label =  "Email")
+            Column(
+                modifier = Modifier.fillMaxSize().padding(all = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Login",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = colors.onSurface
+                )
+                CustomTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = "Email"
+                )
 
-            CustomTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = "Password",
-                //visualTransformation = PasswordVisualTransformation()
-            )
-            Button(onClick = { onLogin(email, password) },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF42EFC4),
-                    contentColor = Color.Black
-                ),
-                shape = RoundedCornerShape(16.dp)) { Text("Login") }
+                CustomTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = "Password"
+                )
 
-            Spacer(modifier = Modifier.height(height = 100.dp))
-            Text(text = "Don't have an account: ")
-            Button(onClick = { onRegister() },
+                Button(
+                    onClick = { onLogin(email, password) },
                     colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF42EFC4),
-                    contentColor = Color.Black
-                     ),
-                    shape = RoundedCornerShape(16.dp)) { Text("Register") }
-        }
-        }
-    }
+                        containerColor = colors.primary,
+                        contentColor = colors.onPrimary
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) { Text("Login") }
 
+                Spacer(modifier = Modifier.height(height = 100.dp))
+
+                Text(
+                    text = "Don't have an account:",
+                    color = colors.onSurface
+                )
+
+                Button(
+                    onClick = { onRegister() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.primary,
+                        contentColor = colors.onPrimary
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) { Text("Register") }
+            }
+        }
     }
+}
