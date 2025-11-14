@@ -12,7 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,27 +20,30 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.splitmoney.viewModels.GroupsViewModel
-import com.example.splitmoney.ui.theme.SplitMoneyTheme
+import com.example.splitmoney.viewModels.GroupViewModel
 
 @Composable
 fun MainScreen(
-    viewModel: GroupsViewModel,
-    onAddGroupClick: () -> Unit
+    viewModel: GroupViewModel,
+    onAddGroupClick: () -> Unit,
+    userId: Int
 ) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
+
+    val groups by viewModel.groups.collectAsState()
+
+    // Load groups by userId at start
+    LaunchedEffect(userId) { viewModel.loadGroupsByUser(userId) }
 
     Box(modifier = Modifier
         .fillMaxSize()
         .background(colors.background)) {
 
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+
             // 🔹 Top Bar
             Text(
                 text = "SplitMO",
@@ -57,13 +60,17 @@ fun MainScreen(
 
             // 🔹 Groups List
             LazyColumn(modifier = Modifier.weight(1f)) {
-                items(viewModel.groups) { item ->
+                items(groups) { item ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 20.dp, start = 20.dp, end = 20.dp)
                             .height(80.dp)
-                            .border(2.dp, colors.primary, shape = RoundedCornerShape(16.dp)),
+                            .border(2.dp, colors.primary, shape = RoundedCornerShape(16.dp))
+                            .clickable {
+                                // aquí puedes abrir detalle del grupo si quieres
+                                // context.startActivity(Intent(context, GroupDetailActivity::class.java).apply { putExtra("GROUP_ID", item.id) })
+                            },
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = colors.surface)
                     ) {
@@ -72,7 +79,7 @@ fun MainScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "${item.name} (${item.currency})",
+                                text = "${item.name} ()",
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Serif,
                                 color = colors.onSurface,

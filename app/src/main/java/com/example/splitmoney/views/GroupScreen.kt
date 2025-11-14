@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
-import com.example.splitmoney.viewModels.GroupsViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.TextFieldDefaults
@@ -30,7 +29,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Text
-import com.example.splitmoney.data.SplitMoney
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -75,7 +73,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.text.font.FontStyle
-import com.example.splitmoney.data.Person
 
 @Composable
 fun Group() {

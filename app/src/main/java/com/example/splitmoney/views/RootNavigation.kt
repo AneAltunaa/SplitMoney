@@ -4,10 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.splitmoney.viewModels.GroupsViewModel
+import com.example.splitmoney.viewModels.GroupViewModel
 
 @Composable
-fun RootNavigation(groupsViewModel: GroupsViewModel) {
+fun RootNavigation(groupViewModel: GroupViewModel) {
     val navController = rememberNavController()
 
     NavHost(
@@ -62,7 +62,7 @@ fun RootNavigation(groupsViewModel: GroupsViewModel) {
 
         // 4) Main app (εκεί που έχεις ήδη το navigation σου)
         composable("main") {
-            AppNavigation(groupsViewModel)
+            AppNavigation(groupViewModel)
         }
     }
 }

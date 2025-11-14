@@ -4,10 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.splitmoney.viewModels.GroupsViewModel
+import com.example.splitmoney.viewModels.GroupViewModel
 
 @Composable
-fun AppNavigation(viewModel: GroupsViewModel) {
+fun AppNavigation(viewModel: GroupViewModel) {
 
     val navController = rememberNavController()
 
@@ -17,7 +17,10 @@ fun AppNavigation(viewModel: GroupsViewModel) {
         composable("main") {
             MainScreen(
                 viewModel = viewModel,
-                onAddGroupClick = { navController.navigate("addGroup") }
+                onAddGroupClick = {
+                    navController.navigate("addGroup")
+                },
+                userId = 1
             )
         }
 
