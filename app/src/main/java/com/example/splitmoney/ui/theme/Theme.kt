@@ -41,7 +41,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 @Composable
 fun SplitMoneyTheme(
-    darkTheme: Boolean = true,
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colors: ColorScheme = if (darkTheme) DarkColorScheme else LightColorScheme

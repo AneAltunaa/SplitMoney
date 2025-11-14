@@ -21,7 +21,7 @@ def register_user():
           (data["name"], data["lastname"], data["mail"], data["phone"], data["password"]))
     return jsonify({"message": "User registered"})
 
-@app.post("/users/login")
+@app.post("/use  rs/login")
 def login_user():
     d = request.json
     u = query("SELECT * FROM users WHERE mail=? AND password=?", (d["mail"], d["password"]), one=True)
