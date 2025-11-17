@@ -7,7 +7,17 @@ class UserRepository {
     private val api = RetrofitInstance.api
 
     suspend fun getAllUsers() = api.getAllUsers()
-    suspend fun registerUser(user: User) = api.registerUser(user)
+    suspend fun registerUser(user: User) {
+        api.registerUser(
+            mapOf(
+                "name" to user.name,
+                "lastname" to user.lastname,
+                "mail" to user.mail,
+                "phone" to user.phone,
+                "password" to user.password
+            )
+        )
+    }
     suspend fun loginUser(mail: String, password: String) =
         api.loginUser(mapOf("mail" to mail, "password" to password))
     suspend fun getUserById(id: Int) = api.getUserById(id)

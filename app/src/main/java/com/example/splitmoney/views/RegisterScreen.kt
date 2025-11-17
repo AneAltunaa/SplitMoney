@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun RegisterScreen(
-    onRegister: (email: String, password: String) -> Unit,
+    onRegister: (name: String, surname: String, email: String, phone: String, password: String) -> Unit,
     onBackToLogin: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
@@ -25,13 +25,17 @@ fun RegisterScreen(
     var surname by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
 
+    val isFormValid = name.isNotBlank() &&
+            surname.isNotBlank() &&
+            email.isNotBlank() &&
+            phoneNumber.isNotBlank() &&
+            password.isNotBlank()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(colors.primary)
     ) {
-        // Back button
         IconButton(
             onClick = onBackToLogin,
             modifier = Modifier
@@ -44,8 +48,6 @@ fun RegisterScreen(
                 tint = colors.onPrimary
             )
         }
-
-
 
         Box(
             modifier = Modifier
@@ -68,45 +70,26 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                CustomTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = "Name"
-                )
-
-                CustomTextField(
-                    value = surname,
-                    onValueChange = { surname = it },
-                    label = "Surname"
-                )
-
-                CustomTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = "Email"
-                )
-
-                CustomTextField(
-                    value = phoneNumber,
-                    onValueChange = { phoneNumber = it },
-                    label = "Phone Number"
-                )
-
-                CustomTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = "Password"
-                    // visualTransformation = PasswordVisualTransformation()
-                )
-
+                CustomTextField(value = name, onValueChange = { name = it }, label = "Name")
+                Spacer(modifier = Modifier.height(16.dp))
+                CustomTextField(value = surname, onValueChange = { surname = it }, label = "Surname")
+                Spacer(modifier = Modifier.height(16.dp))
+                CustomTextField(value = email, onValueChange = { email = it }, label = "Email")
+                Spacer(modifier = Modifier.height(16.dp))
+                CustomTextField(value = phoneNumber, onValueChange = { phoneNumber = it }, label = "Phone Number")
+                Spacer(modifier = Modifier.height(16.dp))
+                CustomTextField(value = password, onValueChange = { password = it }, label = "Password")
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
-                    onClick = { onRegister(email, password) },
+                    onClick = { onRegister(name, surname, email, phoneNumber, password) },
+                    enabled = isFormValid,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.primary,
-                        contentColor = colors.onPrimary
+                        contentColor = colors.onPrimary,
+                        disabledContainerColor = colors.primary.copy(alpha = 0.4f),
+                        disabledContentColor = colors.onPrimary.copy(alpha = 0.4f)
                     ),
                     shape = RoundedCornerShape(16.dp)
                 ) {

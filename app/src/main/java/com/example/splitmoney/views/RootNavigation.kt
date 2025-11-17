@@ -1,8 +1,11 @@
 package com.example.splitmoney.views
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.compose.runtime.getValue
 import androidx.navigation.compose.rememberNavController
 import com.example.splitmoney.viewModels.ExpenseShareViewModel
 import com.example.splitmoney.viewModels.ExpenseViewModel
@@ -36,12 +39,19 @@ fun RootNavigation(groupViewModel: GroupViewModel,
 
         // 2) Login
         composable("login") {
-            LoginScreen(
-                onLogin = { email, password ->
-                    // TODO: validation / API call αν θέλεις
+            val loggedUserId by userViewModel.loggedUserId.collectAsState()
+
+            LaunchedEffect(loggedUserId) {
+                if (loggedUserId != null) {
                     navController.navigate("main") {
                         popUpTo("first") { inclusive = true }
                     }
+                }
+            }
+
+            LoginScreen(
+                onLogin = { email, password ->
+                    userViewModel.login(email, password)
                 },
                 onRegister = {
                     navController.navigate("register")
@@ -54,14 +64,13 @@ fun RootNavigation(groupViewModel: GroupViewModel,
             )
         }
 
+
         // 3) Register
         composable("register") {
             RegisterScreen(
-                onRegister = { email, password ->
-                    // TODO: register λογική
-                    navController.navigate("main") {
-                        popUpTo("first") { inclusive = true }
-                    }
+                onRegister = { name, surname, email, phone, password ->
+                    userViewModel.register(name, surname, email, phone, password)
+                    navController.navigate("login")
                 },
                 onBackToLogin = {
                     navController.popBackStack()

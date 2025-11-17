@@ -72,6 +72,7 @@ fun LoginScreen(
                     onValueChange = { email = it },
                     label = "Email"
                 )
+                Spacer(modifier = Modifier.height(24.dp))
 
                 CustomTextField(
                     value = password,
@@ -84,7 +85,9 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
-                    onClick = { onLogin(email, password) },
+                    onClick = {
+                        onLogin(email, password)
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.primary,
                         contentColor = colors.onPrimary

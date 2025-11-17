@@ -5,13 +5,14 @@ import com.example.splitmoney.data.model.User
 import com.example.splitmoney.data.model.GroupUser
 import com.example.splitmoney.data.model.Expense
 import com.example.splitmoney.data.model.ExpenseShare
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
 
     // Users
     @GET("users") suspend fun getAllUsers(): List<User>
-    @POST("users/register") suspend fun registerUser(@Body user: User): Map<String, String>
+    @POST("users/register") suspend fun registerUser(@Body data: Map<String, String>): Response<Unit>
     @POST("users/login") suspend fun loginUser(@Body credentials: Map<String, String>): User?
     @GET("users/{id}") suspend fun getUserById(@Path("id") id: Int): User?
     @GET("users/mail/{mail}") suspend fun getUserByMail(@Path("mail") mail: String): User?

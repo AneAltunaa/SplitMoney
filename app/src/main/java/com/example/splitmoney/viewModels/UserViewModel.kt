@@ -18,6 +18,12 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser
 
+    private val _loggedUserId = MutableStateFlow<Int?>(null)
+    val loggedUserId: StateFlow<Int?> = _loggedUserId
+
+    private val _loginError = MutableStateFlow<String?>(null)
+    val loginError: StateFlow<String?> = _loginError
+
     fun clearFoundUser() {
         _foundUser.value = null
     }
@@ -32,8 +38,30 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
         _currentUser.value = try { repo.getUserById(id) } catch (e: Exception) { null }
     }
 
-    fun registerUser(user: User) = viewModelScope.launch { repo.registerUser(user) }
-    fun loginUser(mail: String, password: String) = viewModelScope.launch { repo.loginUser(mail, password) }
+    fun register(name: String, surname: String, email: String, phone: String, password: String) =
+        viewModelScope.launch {
+            repo.registerUser(
+                User(
+                    id = null,
+                    name = name,
+                    lastname = surname,
+                    mail = email,
+                    phone = phone,
+                    password = password
+                )
+            )
+        }
+
+    fun login(email: String, password: String) = viewModelScope.launch {
+        try {
+            val user = repo.loginUser(email, password)
+            _loggedUserId.value = user?.id
+            _loginError.value = if (user == null) "Invalid credentials" else null
+        } catch (e: Exception) {
+            _loginError.value = "Login failed: ${e.message}"
+        }
+    }
+
     fun updateUser(id: Int, user: User) = viewModelScope.launch { repo.updateUser(id, user) }
     fun deleteUser(id: Int) = viewModelScope.launch { repo.deleteUser(id) }
 }
