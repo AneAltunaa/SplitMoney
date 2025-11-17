@@ -124,107 +124,117 @@ fun AddGroupScreen(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background)
-            .padding(16.dp)
+        .fillMaxSize()
+        .background(colors.background)
     ) {
-        Text(
-            "New Group",
-            fontWeight = FontWeight.Bold,
-            fontSize = 28.sp,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-        Spacer(Modifier.height(16.dp))
 
-        CustomTextField(value = groupName, onValueChange = { groupName = it }, label = "Group Name")
-        Spacer(Modifier.height(16.dp))
-        CustomTextField(value = description, onValueChange = { description = it }, label = "Description")
+        AppTopBar()
 
-        Spacer(Modifier.height(8.dp))
-        Text("Add members by email:", fontWeight = FontWeight.SemiBold)
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(colors.background)
+                .padding(16.dp)
         ) {
-            CustomTextField(
-                value = emailToAdd,
-                onValueChange = { emailToAdd = it },
-                label = "Enter user email",
-                modifier = Modifier.weight(1f)
+            Text(
+                "New Group",
+                fontWeight = FontWeight.Bold,
+                fontSize = 28.sp,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
+            Spacer(Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.width(8.dp))
+            CustomTextField(value = groupName, onValueChange = { groupName = it }, label = "Group Name")
+            Spacer(Modifier.height(16.dp))
+            CustomTextField(value = description, onValueChange = { description = it }, label = "Description")
 
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(15.dp))
-                    .clickable {
-                        if (emailToAdd.isBlank()) errorMsg = "Email cannot be empty"
-                        else userViewModel.findUserByEmail(emailToAdd.trim())
-                    },
-                contentAlignment = Alignment.Center
+            Spacer(Modifier.height(8.dp))
+            Text("Add members by email:", fontWeight = FontWeight.SemiBold)
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = Color.White
+                CustomTextField(
+                    value = emailToAdd,
+                    onValueChange = { emailToAdd = it },
+                    label = "Enter user email",
+                    modifier = Modifier.weight(1f)
                 )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(15.dp))
+                        .clickable {
+                            if (emailToAdd.isBlank()) errorMsg = "Email cannot be empty"
+                            else userViewModel.findUserByEmail(emailToAdd.trim())
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = Color.White
+                    )
+                }
             }
-        }
 
-        foundUser?.let { user ->
-            if (!members.any { it.id == user.id }) { // only if its not in the list
-                UserCard(user = user, onAdd = {
-                    members = members.toMutableList().apply { add(user) }
-                    emailToAdd = ""
-                    userViewModel.clearFoundUser()
-                    errorMsg = null
-                })
+            foundUser?.let { user ->
+                if (!members.any { it.id == user.id }) { // only if its not in the list
+                    UserCard(user = user, onAdd = {
+                        members = members.toMutableList().apply { add(user) }
+                        emailToAdd = ""
+                        userViewModel.clearFoundUser()
+                        errorMsg = null
+                    })
+                }
             }
-        }
 
-        Text("Members:", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 12.dp))
-        LazyColumn {
-            items(members) { user ->
-                UserCard(
-                    user = user,
-                    currentUserId = loggedInUserId,
-                    onRemove = {
-                        members = members.toMutableList().apply { remove(user) }
-                    }
-                )
+            Text("Members:", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 12.dp))
+            LazyColumn {
+                items(members) { user ->
+                    UserCard(
+                        user = user,
+                        currentUserId = loggedInUserId,
+                        onRemove = {
+                            members = members.toMutableList().apply { remove(user) }
+                        }
+                    )
+                }
             }
+
+            errorMsg?.let { Text(it, color = Color.Red, modifier = Modifier.padding(top = 8.dp)) }
+
+            Spacer(Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    if (groupName.isBlank()) { errorMsg = "Group name cannot be empty"; return@Button }
+
+                    val group = Group(
+                        name = groupName,
+                        description = description,
+                        participants = members.mapNotNull { it.id }
+                    )
+
+                    groupViewModel.createGroup(group,
+                        onSuccess = { gid -> onBack() },
+                        onError = { msg -> errorMsg = "Error: $msg" }
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Create Group")
+            }
+
+            Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Cancel") }
         }
-
-        errorMsg?.let { Text(it, color = Color.Red, modifier = Modifier.padding(top = 8.dp)) }
-
-        Spacer(Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                if (groupName.isBlank()) { errorMsg = "Group name cannot be empty"; return@Button }
-
-                val group = Group(
-                    name = groupName,
-                    description = description,
-                    participants = members.mapNotNull { it.id }
-                )
-
-                groupViewModel.createGroup(group,
-                    onSuccess = { gid -> onBack() },
-                    onError = { msg -> errorMsg = "Error: $msg" }
-                )
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Create Group")
-        }
-
-        Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Cancel") }
     }
+
 }
 
 

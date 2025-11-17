@@ -18,23 +18,30 @@ class GroupViewModel(
     private val _createdGroupId = MutableStateFlow<Int?>(null)
     val createdGroupId: StateFlow<Int?> = _createdGroupId
 
+    private val _selectedGroup = MutableStateFlow<Group?>(null)
+    val selectedGroup: StateFlow<Group?> = _selectedGroup
+
     fun loadGroupsByUser(uid: Int) = viewModelScope.launch {
         _groups.value = repo.getGroupsByUser(uid)
     }
 
-    fun createGroup(group: Group, onSuccess: (Int) -> Unit, onError: (String) -> Unit) = viewModelScope.launch {
-        try {
-            val res = repo.createGroup(group)
-            val id = (res["group_id"] as? Double)?.toInt()
-                ?: throw Exception("Server didnt send 'group_id'. Response: $res")
-            _createdGroupId.value = id
-            onSuccess(id)
-        } catch (e: Exception) {
-            onError(e.message ?: "Error")
+    fun createGroup(group: Group, onSuccess: (Int) -> Unit, onError: (String) -> Unit) =
+        viewModelScope.launch {
+            try {
+                val res = repo.createGroup(group)
+                val id = (res["group_id"] as? Double)?.toInt()
+                    ?: throw Exception("Server didnt send 'group_id'. Response: $res")
+                _createdGroupId.value = id
+                onSuccess(id)
+            } catch (e: Exception) {
+                onError(e.message ?: "Error")
+            }
         }
+
+    fun loadGroupById(id: Int) = viewModelScope.launch {
+        _selectedGroup.value = repo.getGroupById(id)
     }
 
-    fun getGroupById(id: Int) = viewModelScope.launch { repo.getGroupById(id) }
     fun updateGroup(id: Int, group: Group) = viewModelScope.launch { repo.updateGroup(id, group) }
     fun deleteGroup(id: Int) = viewModelScope.launch { repo.deleteGroup(id) }
 }

@@ -42,5 +42,19 @@ fun AppNavigation(
                 onBack = { navController.popBackStack() }
             )
         }
+
+        composable("groupDetail/{groupId}") { backStack ->
+            val groupId = backStack.arguments?.getString("groupId")?.toInt()
+            if (groupId != null) {
+                GroupDetailScreen(
+                    groupId = groupId,
+                    groupViewModel = groupViewModel,
+                    groupUserViewModel,
+                    expenseViewModel,
+                    shareViewModel = expenseShareViewModel,
+                    navController = navController
+                )
+            }
+        }
     }
 }

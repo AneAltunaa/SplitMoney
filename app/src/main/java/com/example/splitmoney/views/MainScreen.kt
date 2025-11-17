@@ -37,15 +37,7 @@ fun MainScreen(
     Box(modifier = Modifier.fillMaxSize().background(colors.background)) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // Top bar
-            Text(
-                text = "SplitMO",
-                fontWeight = FontWeight.Bold,
-                fontSize = 30.sp,
-                fontFamily = FontFamily.Serif,
-                color = colors.onPrimary,
-                modifier = Modifier.fillMaxWidth().background(colors.primary).padding(16.dp)
-            )
+            AppTopBar()
 
             // Groups List
             LazyColumn(modifier = Modifier.weight(1f)) {
@@ -56,7 +48,7 @@ fun MainScreen(
                             .padding(top = 20.dp, start = 20.dp, end = 20.dp)
                             .height(80.dp)
                             .border(2.dp, colors.primary, shape = RoundedCornerShape(16.dp))
-                            .clickable { /* Group detail */ },
+                            .clickable { navController.navigate("groupDetail/${item.id}") },
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = colors.surface)
                     ) {

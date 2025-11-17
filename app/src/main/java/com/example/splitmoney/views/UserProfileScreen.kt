@@ -32,14 +32,7 @@ fun UserProfileScreen(userViewModel: UserViewModel, navController: NavController
         Column(modifier = Modifier.fillMaxSize()) {
 
             // 🔹 Top bar
-            Text(
-                text = "SplitMO",
-                fontWeight = FontWeight.Bold,
-                fontSize = 30.sp,
-                fontFamily = FontFamily.Serif,
-                color = colorScheme.onPrimary,
-                modifier = Modifier.fillMaxWidth().background(colorScheme.primary).padding(16.dp)
-            )
+            AppTopBar()
 
             Box(modifier = Modifier.border(0.5.dp, colorScheme.primary).weight(1f)) {
                 Column(
