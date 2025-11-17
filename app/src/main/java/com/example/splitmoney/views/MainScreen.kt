@@ -83,7 +83,7 @@ fun MainScreen(
         // Floating Add Button
         IconButton(
             onClick = onAddGroupClick,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 66.dp)
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 72.dp)
                 .size(50.dp)
                 .background(colors.primary, shape = CircleShape)
         ) {
