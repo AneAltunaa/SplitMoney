@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class GroupUserViewModel(private val repo: GroupUserRepository) : ViewModel() {
+class GroupUserViewModel(private val repo: GroupUserRepository = GroupUserRepository()) : ViewModel() {
     private val _participants = MutableStateFlow<List<User>>(emptyList())
     val participants: StateFlow<List<User>> = _participants
 

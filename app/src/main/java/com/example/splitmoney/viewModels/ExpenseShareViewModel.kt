@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ExpenseShareViewModel(private val repo: ExpenseShareRepository) : ViewModel() {
+class ExpenseShareViewModel(private val repo: ExpenseShareRepository = ExpenseShareRepository()) : ViewModel() {
     private val _shares = MutableStateFlow<List<ExpenseShare>>(emptyList())
     val shares: StateFlow<List<ExpenseShare>> = _shares
 

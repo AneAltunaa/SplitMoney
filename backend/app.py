@@ -21,7 +21,7 @@ def register_user():
           (data["name"], data["lastname"], data["mail"], data["phone"], data["password"]))
     return jsonify({"message": "User registered"})
 
-@app.post("/use  rs/login")
+@app.post("/users/login")
 def login_user():
     d = request.json
     u = query("SELECT * FROM users WHERE mail=? AND password=?", (d["mail"], d["password"]), one=True)
@@ -52,10 +52,18 @@ def delete_user(id):
 @app.post("/groups")
 def create_group():
     d = request.json
-    query("INSERT INTO groups (name, description) VALUES (?, ?)", (d["name"], d["description"]))
-    gid = query("SELECT last_insert_rowid() AS id", one=True)["id"]
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    cur.execute("INSERT INTO groups (name, description) VALUES (?, ?)", (d["name"], d["description"]))
+    gid = cur.lastrowid
+
     for uid in d.get("participants", []):
-        query("INSERT OR IGNORE INTO group_users (group_id, user_id) VALUES (?, ?)", (gid, uid))
+        cur.execute("INSERT OR IGNORE INTO group_users (group_id, user_id) VALUES (?, ?)", (gid, uid))
+
+    conn.commit()
+    conn.close()
     return jsonify({"message": "Group created", "group_id": gid})
 
 @app.get("/groups/<int:id>")
@@ -82,6 +90,7 @@ def delete_group(id):
 @app.post("/group_users")
 def add_participant():
     d = request.json
+    print("DATA RECEIVED:", d)
     query("INSERT OR IGNORE INTO group_users (group_id, user_id) VALUES (?, ?)", (d["group_id"], d["user_id"]))
     return jsonify({"message": "Participant added"})
 

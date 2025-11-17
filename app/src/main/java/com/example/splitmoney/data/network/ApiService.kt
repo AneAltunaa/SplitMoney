@@ -5,7 +5,6 @@ import com.example.splitmoney.data.model.User
 import com.example.splitmoney.data.model.GroupUser
 import com.example.splitmoney.data.model.Expense
 import com.example.splitmoney.data.model.ExpenseShare
-import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
@@ -20,7 +19,7 @@ interface ApiService {
     @DELETE("users/{id}") suspend fun deleteUser(@Path("id") id: Int): Map<String,String>
 
     // Groups
-    @POST("groups") suspend fun createGroup(@Body group: Group): Map<String, Any>
+    @POST("groups") suspend fun createGroup(@Body groupData: Group): Map<String, Any>
     @GET("groups/{id}") suspend fun getGroupById(@Path("id") id: Int): Group?
     @GET("groups/user/{uid}") suspend fun getGroupsByUser(@Path("uid") uid: Int): List<Group>
     @PUT("groups/{id}") suspend fun updateGroup(@Path("id") id: Int, @Body group: Group): Map<String,String>

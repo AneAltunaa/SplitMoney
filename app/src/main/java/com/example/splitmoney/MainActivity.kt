@@ -10,7 +10,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.splitmoney.ui.theme.SplitMoneyTheme
+import com.example.splitmoney.viewModels.ExpenseShareViewModel
+import com.example.splitmoney.viewModels.ExpenseViewModel
+import com.example.splitmoney.viewModels.GroupUserViewModel
 import com.example.splitmoney.viewModels.GroupViewModel
+import com.example.splitmoney.viewModels.UserViewModel
 import com.example.splitmoney.views.RootNavigation
 
 class MainActivity : ComponentActivity() {
@@ -24,9 +28,18 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val groupViewModel: GroupViewModel = viewModel()
+                    val expenseShareViewModel: ExpenseShareViewModel = viewModel()
+                    val expenseViewModel: ExpenseViewModel = viewModel()
+                    val groupUserViewModel: GroupUserViewModel = viewModel()
+                    val userViewModel: UserViewModel = viewModel()
 
                     // ΕΔΩ πρέπει να μπει το RootNavigation
-                    RootNavigation(groupViewModel)
+                    RootNavigation(groupViewModel,
+                        expenseShareViewModel,
+                        expenseViewModel,
+                        groupUserViewModel,
+                        userViewModel
+                    )
                 }
             }
         }
