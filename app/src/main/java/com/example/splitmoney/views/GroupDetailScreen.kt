@@ -282,7 +282,7 @@ fun GroupDetailScreen(
                             }
 
                             Button(
-                                onClick = { /* TODO: create expense */ },
+                                onClick = { navController.navigate("addExpense/$groupId")  },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text("Create Expense")

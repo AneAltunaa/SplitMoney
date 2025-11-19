@@ -60,5 +60,17 @@ fun AppNavigation(
                 )
             }
         }
+
+        composable("addExpense/{groupId}") { backStack ->
+            val groupId = backStack.arguments?.getString("groupId")?.toInt()
+            if (groupId != null) {
+                AddExpenseScreen(
+                    groupId = groupId,
+                    loggedInUserId = userId!!,
+                    expenseViewModel = expenseViewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+        }
     }
 }
