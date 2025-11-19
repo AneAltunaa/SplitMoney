@@ -24,6 +24,8 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
     private val _loginError = MutableStateFlow<String?>(null)
     val loginError: StateFlow<String?> = _loginError
 
+    private var pendingFcmToken: String? = null
+
     fun clearFoundUser() {
         _foundUser.value = null
     }
@@ -57,6 +59,13 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
             val user = repo.loginUser(email, password)
             _loggedUserId.value = user?.id
             _loginError.value = if (user == null) "Invalid credentials" else null
+
+            // ログイン成功、かつ保留中のトークンがある場合、サーバーに送信！
+            if (user != null && user.id != null && pendingFcmToken != null) {
+                android.util.Log.d("FCM", "Login successful. Sending pending token.")
+                registerFcmToken(pendingFcmToken!!)
+            }
+
         } catch (e: Exception) {
             _loginError.value = "Login failed: ${e.message}"
         }
@@ -64,4 +73,35 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
 
     fun updateUser(id: Int, user: User) = viewModelScope.launch { repo.updateUser(id, user) }
     fun deleteUser(id: Int) = viewModelScope.launch { repo.deleteUser(id) }
+
+    // トークン登録処理
+    // ★変更3: トークンを受け取ったら変数に保存し、ログイン済みなら即送信
+    fun registerFcmToken(token: String) {
+        // 常に最新のトークンを保持しておく
+        pendingFcmToken = token
+
+        val userId = _loggedUserId.value
+        if (userId != null) {
+            viewModelScope.launch {
+                try {
+                    repo.updateFcmToken(userId, token)
+                    android.util.Log.d("FCM", "Success: Token sent for user $userId")
+                } catch (e: Exception) {
+                    android.util.Log.e("FCM", "Failed to send token: ${e.message}")
+                }
+            }
+        } else {
+            android.util.Log.d("FCM", "Token saved locally (User not logged in yet)")
+        }
+    }
+
+    // 催促処理
+    fun sendReminderNotification(targetUserId: Int, groupId: Int) = viewModelScope.launch {
+        try {
+            repo.sendReminder(targetUserId, groupId)
+            android.util.Log.d("FCM", "Reminder sent successfully")
+        } catch (e: Exception) {
+            android.util.Log.e("FCM", "Failed to send reminder: ${e.message}")
+        }
+    }
 }

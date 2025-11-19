@@ -43,4 +43,17 @@ interface ApiService {
     @GET("expense_shares/{eid}") suspend fun getSharesByExpense(@Path("eid") eid: Int): List<ExpenseShare>
     @PUT("expense_shares/{id}") suspend fun updateShare(@Path("id") id: Int, @Body share: ExpenseShare): Map<String,String>
     @DELETE("expense_shares/{id}") suspend fun deleteShare(@Path("id") id: Int): Map<String,String>
+
+    // 1. スマホの住所（FCMトークン）をサーバーに登録する
+    // サーバー側では PUT /users/{id}/token で受け取る想定です
+    @PUT("users/{id}/token")
+    suspend fun updateFcmToken(
+        @Path("id") id: Int,
+        @Body tokenData: Map<String, String>
+    ): Map<String, String>
+
+    // 2. 催促通知を送る（"Reminder"ボタン用）
+    // 誰に(targetUserId)、何のグループで(groupId)催促するかを送ります
+    @POST("notifications/remind")
+    suspend fun sendReminder(@Body data: Map<String, Int>): Map<String, String>
 }

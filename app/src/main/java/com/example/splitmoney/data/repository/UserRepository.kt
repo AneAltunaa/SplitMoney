@@ -24,5 +24,13 @@ class UserRepository {
     suspend fun getUserByMail(mail: String) = api.getUserByMail(mail)
     suspend fun updateUser(id: Int, user: User) = api.updateUser(id, user)
     suspend fun deleteUser(id: Int) = api.deleteUser(id)
+
+    // トークンをサーバーに送る
+    suspend fun updateFcmToken(userId: Int, token: String) =
+        api.updateFcmToken(userId, mapOf("token" to token))
+
+    // 催促を送る
+    suspend fun sendReminder(targetUserId: Int, groupId: Int) =
+        api.sendReminder(mapOf("target_user_id" to targetUserId, "group_id" to groupId))
 }
 
