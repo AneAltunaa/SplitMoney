@@ -29,7 +29,7 @@ fun FirstScreen(onOpen: () -> Unit) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "SnapRec",
+                text = "SplitMO",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 textDecoration = TextDecoration.Underline,

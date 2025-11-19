@@ -83,14 +83,14 @@ fun UserProfileScreen(userViewModel: UserViewModel, navController: NavController
                     }
 
                     Button(
-                        onClick = { /* TODO: change password */ },
+                        onClick = { navController.navigate("updateUser") },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = colorScheme.primary,
                             contentColor = colorScheme.onPrimary
                         ),
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Text("Change Password")
+                        Text("Update User")
                     }
                 }
             }

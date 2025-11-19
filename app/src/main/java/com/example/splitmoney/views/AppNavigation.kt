@@ -30,6 +30,10 @@ fun AppNavigation(
             UserProfileScreen(userViewModel = userViewModel, navController = navController)
         }
 
+        composable("updateUser"){
+            UpdateUserScreen(userViewModel = userViewModel, onBack = { navController.navigate("profile") })
+        }
+
         composable("settings") {
             // SettingsScreen(navController)
         }
