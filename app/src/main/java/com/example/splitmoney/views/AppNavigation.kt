@@ -100,7 +100,9 @@ fun AppNavigation(
                 BalancesScreen(
                     groupId = groupId,
                     balanceViewModel = balanceViewModel,
-                    navController = navController
+                    navController = navController,
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme
                 )
             }
         }

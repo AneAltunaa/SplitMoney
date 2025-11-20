@@ -20,7 +20,9 @@ import com.example.splitmoney.viewModels.BalanceViewModel
 fun BalancesScreen(
     groupId: Int,
     balanceViewModel: BalanceViewModel,
-    navController: NavController
+    navController: NavController,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     val balancesState by balanceViewModel.balances.collectAsState()
@@ -38,7 +40,8 @@ fun BalancesScreen(
             modifier = Modifier.fillMaxSize()
         ) {
 
-            AppTopBar()
+            AppTopBar(isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme)
 
             Column(
                 modifier = Modifier

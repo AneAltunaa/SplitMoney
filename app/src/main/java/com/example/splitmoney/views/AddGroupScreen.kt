@@ -148,9 +148,11 @@ fun AddGroupScreen(
                     "New Group",
                     fontWeight = FontWeight.Bold,
                     fontSize = 28.sp,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(top = 16.dp),
                     textAlign = TextAlign.Center,
                     color = colors.onBackground
+
                 )
                 Spacer(Modifier.height(16.dp))
 
