@@ -18,7 +18,12 @@ import androidx.navigation.NavController
 import com.example.splitmoney.viewModels.UserViewModel
 
 @Composable
-fun UserProfileScreen(userViewModel: UserViewModel, navController: NavController) {
+fun UserProfileScreen(
+    userViewModel: UserViewModel,
+    navController: NavController,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
+) {
     val colorScheme = MaterialTheme.colorScheme
     val currentUser by userViewModel.currentUser.collectAsState()
     val loggedUserId by userViewModel.loggedUserId.collectAsState()
@@ -30,8 +35,7 @@ fun UserProfileScreen(userViewModel: UserViewModel, navController: NavController
     Box(modifier = Modifier.fillMaxSize().background(colorScheme.background)) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // 🔹 Top bar
-            AppTopBar()
+            AppTopBar(isDarkTheme = isDarkTheme, onToggleTheme = onToggleTheme)
 
             Box(modifier = Modifier.border(0.5.dp, colorScheme.primary).weight(1f)) {
                 Column(

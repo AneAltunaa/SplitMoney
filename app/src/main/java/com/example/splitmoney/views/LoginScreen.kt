@@ -87,7 +87,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = loginError,
-                        color = Color.Red, // Rdeča barva
+                        color = Color.Red,
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()

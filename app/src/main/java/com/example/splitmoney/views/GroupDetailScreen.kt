@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
@@ -27,7 +26,6 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -76,13 +74,15 @@ fun ExpandableExpenseCard(
     expense: Expense,
     shareViewModel: ExpenseShareViewModel,
     participants: List<User>,
-    colors: ColorScheme
+    colors: ColorScheme,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var sharesForThisExpense by remember { mutableStateOf<List<ExpenseShare>>(emptyList()) }
 
     LaunchedEffect(expense.id) {
-        sharesForThisExpense = shareViewModel.repo.getSharesByExpense(expense.id!!) // acceso directo al repo o ViewModel función suspend
+        sharesForThisExpense = shareViewModel.repo.getSharesByExpense(expense.id!!)
     }
 
     val payerName = participants.find { it.id == expense.paid_by }?.let { "${it.name} ${it.lastname}" } ?: "Unknown"
@@ -174,7 +174,9 @@ fun GroupDetailScreen(
     groupUserViewModel: GroupUserViewModel,
     expenseViewModel: ExpenseViewModel,
     shareViewModel: ExpenseShareViewModel,
-    navController: NavController
+    navController: NavController,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     val group by groupViewModel.selectedGroup.collectAsState()
@@ -199,7 +201,7 @@ fun GroupDetailScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            AppTopBar()
+            AppTopBar(isDarkTheme = isDarkTheme, onToggleTheme = onToggleTheme)
 
             Spacer(Modifier.height(8.dp))
 
@@ -276,7 +278,9 @@ fun GroupDetailScreen(
                                     expense = expense,
                                     shareViewModel = shareViewModel,
                                     participants = participants,
-                                    colors = colors
+                                    colors = colors,
+                                    isDarkTheme = isDarkTheme,
+                                    onToggleTheme = onToggleTheme
                                 )
                                 Spacer(Modifier.height(12.dp))
                             }
@@ -302,6 +306,3 @@ fun GroupDetailScreen(
         )
     }
 }
-
-
-

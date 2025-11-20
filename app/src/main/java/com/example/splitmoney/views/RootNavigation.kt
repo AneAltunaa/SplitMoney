@@ -14,11 +14,14 @@ import com.example.splitmoney.viewModels.GroupViewModel
 import com.example.splitmoney.viewModels.UserViewModel
 
 @Composable
-fun RootNavigation(groupViewModel: GroupViewModel,
-                   expenseShareViewModel: ExpenseShareViewModel,
-                   expenseViewModel: ExpenseViewModel,
-                   groupUserViewModel: GroupUserViewModel,
-                   userViewModel: UserViewModel
+fun RootNavigation(
+    groupViewModel: GroupViewModel,
+    expenseShareViewModel: ExpenseShareViewModel,
+    expenseViewModel: ExpenseViewModel,
+    groupUserViewModel: GroupUserViewModel,
+    userViewModel: UserViewModel,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
 ) {
     val navController = rememberNavController()
 
@@ -26,7 +29,6 @@ fun RootNavigation(groupViewModel: GroupViewModel,
         navController = navController,
         startDestination = "first"
     ) {
-        // 1) Πρώτη οθόνη
         composable("first") {
             FirstScreen(
                 onOpen = {
@@ -37,7 +39,6 @@ fun RootNavigation(groupViewModel: GroupViewModel,
             )
         }
 
-        // 2) Login
         composable("login") {
             val loggedUserId by userViewModel.loggedUserId.collectAsState()
             val loginError by userViewModel.loginError.collectAsState()
@@ -69,7 +70,6 @@ fun RootNavigation(groupViewModel: GroupViewModel,
         }
 
 
-        // 3) Register
         composable("register") {
             RegisterScreen(
                 onRegister = { name, surname, email, phone, password ->
@@ -82,13 +82,15 @@ fun RootNavigation(groupViewModel: GroupViewModel,
             )
         }
 
-        // 4) Main app (εκεί που έχεις ήδη το navigation σου)
         composable("main") {
-            AppNavigation(groupViewModel,
+            AppNavigation(
+                groupViewModel,
                 expenseShareViewModel,
                 expenseViewModel,
                 groupUserViewModel,
-                userViewModel
+                userViewModel,
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
             )
         }
 
