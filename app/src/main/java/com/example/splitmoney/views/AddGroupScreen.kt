@@ -27,13 +27,15 @@ import com.example.splitmoney.viewModels.GroupViewModel
 import com.example.splitmoney.viewModels.UserViewModel
 import com.example.splitmoney.data.model.User
 import com.example.splitmoney.data.model.Group
+import androidx.compose.ui.text.input.VisualTransformation
 
 @Composable
 fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     val colors = MaterialTheme.colorScheme
 
@@ -55,6 +57,7 @@ fun CustomTextField(
             value = value,
             onValueChange = onValueChange,
             singleLine = true,
+            visualTransformation = visualTransformation,
             textStyle = TextStyle(
                 color = colors.onBackground,
                 fontSize = 16.sp,

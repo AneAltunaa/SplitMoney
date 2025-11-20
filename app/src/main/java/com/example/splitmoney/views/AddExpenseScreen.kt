@@ -141,10 +141,6 @@ fun AddExpenseScreen(
                 }
             }
 
-            errorMsg?.let {
-                Spacer(Modifier.height(8.dp))
-                Text(it, color = Color.Red)
-            }
             errorMsg?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
 
             Spacer(Modifier.height(24.dp))

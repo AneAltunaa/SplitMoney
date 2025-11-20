@@ -74,7 +74,9 @@ fun MemberCard(name: String) {
 @Composable
 fun ExpandableExpenseCard(
     expense: Expense,
+    groupId: Int,
     shareViewModel: ExpenseShareViewModel,
+    expenseViewModel: ExpenseViewModel,
     participants: List<User>,
     colors: ColorScheme,
     isDarkTheme: Boolean,
@@ -130,6 +132,12 @@ fun ExpandableExpenseCard(
                         ExpenseShareItem(share, participants)
                         Spacer(Modifier.height(8.dp))
                     }
+                    Button(
+                        onClick = { expenseViewModel.deleteExpense(groupId,expense.id!!)},
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Delete")
+                    }
                 }
             }
         }
@@ -166,6 +174,7 @@ fun ExpenseShareItem(share: ExpenseShare, participants: List<User>) {
                 Icon(Icons.Default.Notifications, contentDescription = "notify")
             }
         }
+
     }
 }
 
@@ -303,12 +312,15 @@ fun GroupDetailScreen(
                             expenses.forEach { expense ->
                                 ExpandableExpenseCard(
                                     expense = expense,
+                                    groupId = groupId,
                                     shareViewModel = shareViewModel,
+                                    expenseViewModel = expenseViewModel,
                                     participants = participants,
                                     colors = colors,
                                     isDarkTheme = isDarkTheme,
                                     onToggleTheme = onToggleTheme
                                 )
+
                                 Spacer(Modifier.height(12.dp))
                             }
                         }
