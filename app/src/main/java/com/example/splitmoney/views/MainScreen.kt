@@ -27,7 +27,9 @@ fun MainScreen(
     viewModel: GroupViewModel,
     navController: NavController,
     onAddGroupClick: () -> Unit,
-    userId: Int
+    userId: Int,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     val groups by viewModel.groups.collectAsState()
@@ -37,7 +39,7 @@ fun MainScreen(
     Box(modifier = Modifier.fillMaxSize().background(colors.background)) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            AppTopBar()
+            AppTopBar(isDarkTheme = isDarkTheme, onToggleTheme = onToggleTheme)
 
             // Groups List
             LazyColumn(modifier = Modifier.weight(1f)) {

@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -19,7 +18,12 @@ import androidx.navigation.NavController
 import com.example.splitmoney.viewModels.UserViewModel
 
 @Composable
-fun UserProfileScreen(userViewModel: UserViewModel, navController: NavController) {
+fun UserProfileScreen(
+    userViewModel: UserViewModel,
+    navController: NavController,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
+) {
     val colorScheme = MaterialTheme.colorScheme
     val currentUser by userViewModel.currentUser.collectAsState()
     val loggedUserId by userViewModel.loggedUserId.collectAsState()
@@ -31,8 +35,7 @@ fun UserProfileScreen(userViewModel: UserViewModel, navController: NavController
     Box(modifier = Modifier.fillMaxSize().background(colorScheme.background)) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // 🔹 Top bar
-            AppTopBar()
+            AppTopBar(isDarkTheme = isDarkTheme, onToggleTheme = onToggleTheme)
 
             Box(modifier = Modifier.border(0.5.dp, colorScheme.primary).weight(1f)) {
                 Column(

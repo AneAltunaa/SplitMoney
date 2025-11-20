@@ -76,7 +76,9 @@ fun ExpandableExpenseCard(
     expense: Expense,
     shareViewModel: ExpenseShareViewModel,
     participants: List<User>,
-    colors: ColorScheme
+    colors: ColorScheme,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var sharesForThisExpense by remember { mutableStateOf<List<ExpenseShare>>(emptyList()) }
@@ -174,7 +176,9 @@ fun GroupDetailScreen(
     groupUserViewModel: GroupUserViewModel,
     expenseViewModel: ExpenseViewModel,
     shareViewModel: ExpenseShareViewModel,
-    navController: NavController
+    navController: NavController,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     val group by groupViewModel.selectedGroup.collectAsState()
@@ -199,7 +203,7 @@ fun GroupDetailScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            AppTopBar()
+            AppTopBar(isDarkTheme = isDarkTheme, onToggleTheme = onToggleTheme)
 
             Spacer(Modifier.height(8.dp))
 
@@ -269,7 +273,7 @@ fun GroupDetailScreen(
                 }
 
                 // -------------------------------
-                // 2) EXPENSES
+                // EXPENSES
                 // -------------------------------
                 item {
                     Card(
@@ -301,7 +305,9 @@ fun GroupDetailScreen(
                                     expense = expense,
                                     shareViewModel = shareViewModel,
                                     participants = participants,
-                                    colors = colors
+                                    colors = colors,
+                                    isDarkTheme = isDarkTheme,
+                                    onToggleTheme = onToggleTheme
                                 )
                                 Spacer(Modifier.height(12.dp))
                             }
@@ -320,3 +326,6 @@ fun GroupDetailScreen(
         )
     }
 }
+
+
+

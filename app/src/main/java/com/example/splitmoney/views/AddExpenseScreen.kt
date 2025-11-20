@@ -3,6 +3,8 @@ package com.example.splitmoney.views
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,8 +17,14 @@ import androidx.compose.ui.unit.sp
 import com.example.splitmoney.data.model.User
 import com.example.splitmoney.data.model.ExpenseRequest
 import com.example.splitmoney.data.model.ExpenseShareRequest
-import com.example.splitmoney.viewModels.ExpenseViewModel
 import com.example.splitmoney.viewModels.GroupUserViewModel
+import androidx.compose.foundation.background
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.splitmoney.data.model.Expense
+import com.example.splitmoney.viewModels.ExpenseViewModel
 
 @Composable
 fun AddExpenseScreen(
@@ -24,7 +32,9 @@ fun AddExpenseScreen(
     loggedInUserId: Int,
     expenseViewModel: ExpenseViewModel,
     groupUserViewModel: GroupUserViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
 ) {
     var description by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
@@ -53,40 +63,43 @@ fun AddExpenseScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        AppTopBar()
+        AppTopBar(
+            isDarkTheme = isDarkTheme,
+            onToggleTheme = onToggleTheme
+        )
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
-        ) {
-
+        ){
             Text(
                 "New Expense",
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground
             )
-
             Spacer(Modifier.height(16.dp))
 
-            // --- Description ---
             CustomTextField(
                 value = description,
                 onValueChange = { description = it },
-                label = "Description"
+                label = "Description",
+                leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = "Description") }
             )
-
             Spacer(Modifier.height(16.dp))
 
-            // --- Amount ---
             CustomTextField(
                 value = amount,
-                onValueChange = { amount = it },
-                label = "Amount"
+                onValueChange = {
+                    amount = it.filter { char -> char.isDigit() || char == '.' }
+                },
+                label = "Amount (€)",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                leadingIcon = { Icon(Icons.Filled.AttachMoney, contentDescription = "Amount") }
             )
-
             Spacer(Modifier.height(16.dp))
 
             // --- Split between which members ---
@@ -132,6 +145,7 @@ fun AddExpenseScreen(
                 Spacer(Modifier.height(8.dp))
                 Text(it, color = Color.Red)
             }
+            errorMsg?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
 
             Spacer(Modifier.height(24.dp))
 
@@ -154,8 +168,6 @@ fun AddExpenseScreen(
                         errorMsg = "Select at least one participant"
                         return@Button
                     }
-
-                    // Υπολογισμός share
                     val shareAmount = amt / selectedUserIds.size
 
                     val shares = selectedUserIds.map { uid ->
@@ -164,6 +176,7 @@ fun AddExpenseScreen(
                             amount_owed = shareAmount
                         )
                     }
+
 
                     val request = ExpenseRequest(
                         group_id = groupId,
@@ -201,4 +214,24 @@ fun AddExpenseScreen(
             }
         }
     }
+}
+
+@Composable
+fun CustomTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    leadingIcon: @Composable (() -> Unit)? = null
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        leadingIcon = leadingIcon,
+        keyboardOptions = keyboardOptions,
+        singleLine = true,
+        modifier = modifier
+    )
 }

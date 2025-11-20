@@ -15,7 +15,9 @@ fun AppNavigation(
     expenseViewModel: ExpenseViewModel,
     groupUserViewModel: GroupUserViewModel,
     userViewModel: UserViewModel,
-    balanceViewModel: BalanceViewModel
+    balanceViewModel: BalanceViewModel,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
 ) {
     val userId by userViewModel.loggedUserId.collectAsState()
     if (userId == null) return
@@ -24,11 +26,23 @@ fun AppNavigation(
     NavHost(navController = navController, startDestination = "main") {
 
         composable("main") {
-            MainScreen(viewModel = groupViewModel, navController = navController, onAddGroupClick = { navController.navigate("addGroup") }, userId = userId!!)
+            MainScreen(
+                viewModel = groupViewModel,
+                navController = navController,
+                onAddGroupClick = { navController.navigate("addGroup") },
+                userId = userId!!,
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
+            )
         }
 
         composable("profile") {
-            UserProfileScreen(userViewModel = userViewModel, navController = navController)
+            UserProfileScreen(
+                userViewModel = userViewModel,
+                navController = navController,
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
+            )
         }
 
         composable("updateUser"){
@@ -44,7 +58,9 @@ fun AppNavigation(
                 groupViewModel = groupViewModel,
                 userViewModel = userViewModel,
                 loggedInUserId = userId!!,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
             )
         }
 
@@ -57,7 +73,9 @@ fun AppNavigation(
                     groupUserViewModel = groupUserViewModel,
                     expenseViewModel = expenseViewModel,
                     shareViewModel = expenseShareViewModel,
-                    navController = navController
+                    navController = navController,
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme
                 )
             }
         }
@@ -70,7 +88,9 @@ fun AppNavigation(
                     loggedInUserId = userId!!,
                     expenseViewModel = expenseViewModel,
                     groupUserViewModel = groupUserViewModel,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme
                 )
             }
         }

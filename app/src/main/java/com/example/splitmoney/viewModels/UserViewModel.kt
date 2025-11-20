@@ -1,5 +1,6 @@
 package com.example.splitmoney.viewModels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.splitmoney.data.model.User
@@ -28,6 +29,10 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
         _foundUser.value = null
     }
 
+    fun clearLoginError() {
+        _loginError.value = null
+    }
+
     fun findUserByEmail(mail: String) = viewModelScope.launch {
         _foundUser.value = try { repo.getUserByMail(mail) } catch (e: Exception) { null }
     }
@@ -53,12 +58,24 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
         }
 
     fun login(email: String, password: String) = viewModelScope.launch {
+        _loggedUserId.value = null
+        _loginError.value = null
+
         try {
             val user = repo.loginUser(email, password)
-            _loggedUserId.value = user?.id
-            _loginError.value = if (user == null) "Invalid credentials" else null
+
+            if (user != null) {
+                _loggedUserId.value = user.id
+                Log.i("LOGIN_FLOW", "Login successful for user ID: ${user.id}")
+            } else {
+                val error = "Invalid username or password!"
+                _loginError.value = error
+                Log.e("LOGIN_FLOW", "Login failed. Error: $error")
+            }
         } catch (e: Exception) {
-            _loginError.value = "Login failed: ${e.message}"
+            val error = "Login failed: ${e.message}"
+            _loginError.value = error
+            Log.e("LOGIN_FLOW", "Login failed with exception: ${e.message}")
         }
     }
 
