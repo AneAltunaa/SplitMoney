@@ -54,7 +54,7 @@ fun MainScreen(
                     ) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text(
-                                text = "${item.name} ()",
+                                text = item.name,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Serif,
                                 color = colors.onSurface,

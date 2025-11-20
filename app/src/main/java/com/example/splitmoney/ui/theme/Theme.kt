@@ -28,7 +28,7 @@ private val LightColorScheme = lightColorScheme(
     onSurface = LightOnBackground,
 )
 
-// ✅ Το Dark theme σου
+
 private val DarkColorScheme = darkColorScheme(
     primary = DarkPrimaryColor,
     onPrimary = DarkOnPrimary,
@@ -41,7 +41,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 @Composable
 fun SplitMoneyTheme(
-    darkTheme: Boolean = false,
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colors: ColorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
