@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="deploymentTargetSelector">
-    <selectionStates>
-      <SelectionState runConfigName="app">
-        <option name="selectionMode" value="DIALOG" />
-        <DropdownSelection timestamp="2025-11-20T10:36:48.282339600Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\kazuk\.android\avd\Pixel_7.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection>
-          <targets>
-            <Target type="DEFAULT_BOOT">
-              <handle>
-                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\kazuk\.android\avd\Medium_Phone.avd" />
-              </handle>
-            </Target>
-          </targets>
-        </DialogSelection>
-      </SelectionState>
-    </selectionStates>
-  </component>
+    <component name="deploymentTargetSelector">
+        <selectionStates>
+            <SelectionState runConfigName="app">
+                <option name="selectionMode" value="DIALOG" />
+                <DialogSelection>
+                    <targets>
+                        <Target type="DEFAULT_BOOT">
+                            <handle>
+                                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\kazuk\.android\avd\Medium_Phone.avd" />
+                            </handle>
+                        </Target>
+                    </targets>
+                </DialogSelection>
+            </SelectionState>
+        </selectionStates>
+    </component>
 </project>

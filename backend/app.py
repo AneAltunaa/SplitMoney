@@ -3,7 +3,6 @@ import sqlite3
 import firebase_admin
 from firebase_admin import credentials, messaging
 
-
 # --- Initialization ---
 try:
     cred = credentials.Certificate("serviceAccountKey.json")
@@ -23,6 +22,26 @@ def query(sql, args=(), one=False):
     conn.commit()
     conn.close()
     return (dict(rows[0]) if rows else None) if one else [dict(r) for r in rows]
+
+# --- Helper: Send Notification ---
+def send_push_notification(user_id, title, body):
+    try:
+        # ユーザーのトークンを取得
+        user = query("SELECT fcm_token FROM users WHERE id=?", (user_id,), one=True)
+        if user and user.get('fcm_token'):
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title=title,
+                    body=body,
+                ),
+                token=user['fcm_token'],
+            )
+            response = messaging.send(message)
+            print(f"Notification sent to user {user_id}: {response}")
+        else:
+            print(f"No token found for user {user_id}")
+    except Exception as e:
+        print(f"Failed to send notification: {e}")
 
 # ---------- USERS ----------
 @app.post("/users/register")
@@ -140,16 +159,11 @@ def add_expense():
     d = request.json
     query("INSERT INTO expenses (group_id, description, total_amount, paid_by) VALUES (?, ?, ?, ?)",
           (d["group_id"], d["description"], d["total_amount"], d["paid_by"]))
-
-    # ▼▼▼ 通知ロジック追加 ▼▼▼
-    # 1. 誰が払ったか名前を取得
     payer = query("SELECT name FROM users WHERE id=?", (d["paid_by"],), one=True)
     payer_name = payer['name'] if payer else "Someone"
 
-    # 2. グループのメンバーを取得
     members = query("SELECT user_id FROM group_users WHERE group_id=?", (d["group_id"],))
 
-    # 3. 自分以外に通知送信
     for m in members:
         if m['user_id'] != d['paid_by']:
             send_push_notification(
@@ -157,7 +171,7 @@ def add_expense():
                 "New Expense",
                 f"{payer_name} added '{d['description']}' ($ {d['total_amount']})"
             )
-    # ▲▲▲ 追加ここまで ▲▲▲
+
     return jsonify({"message": "Expense added"})
 
 @app.get("/expenses/<int:gid>")
@@ -200,26 +214,5 @@ def delete_share(id):
     query("DELETE FROM expense_shares WHERE id=?", (id,))
     return jsonify({"message": "Share deleted"})
 
-# --- Notification Function ---
-def send_push_notification(user_id, title, body):
-    try:
-        # ユーザーのトークンを取得
-        user = query("SELECT fcm_token FROM users WHERE id=?", (user_id,), one=True)
-        if user and user.get('fcm_token'):
-            message = messaging.Message(
-                notification=messaging.Notification(
-                    title=title,
-                    body=body,
-                ),
-                token=user['fcm_token'],
-            )
-            response = messaging.send(message)
-            print(f"Notification sent to user {user_id}: {response}")
-        else:
-            print(f"No token found for user {user_id}")
-    except Exception as e:
-        print(f"Failed to send notification: {e}")
-
 if __name__ == "__main__":
     app.run(debug=True)
-

@@ -76,7 +76,10 @@ fun ExpandableExpenseCard(
     expense: Expense,
     shareViewModel: ExpenseShareViewModel,
     participants: List<User>,
-    colors: ColorScheme
+    colors: ColorScheme,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+    loggedInUserId: Int
 ) {
     var expanded by remember { mutableStateOf(false) }
     var sharesForThisExpense by remember { mutableStateOf<List<ExpenseShare>>(emptyList()) }
@@ -110,7 +113,7 @@ fun ExpandableExpenseCard(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "$${expense.total_amount}",
+                        "${expense.total_amount}€",
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
@@ -125,7 +128,22 @@ fun ExpandableExpenseCard(
             AnimatedVisibility(expanded) {
                 Column(modifier = Modifier.padding(top = 12.dp)) {
                     sharesForThisExpense.forEach { share ->
-                        ExpenseShareItem(share, participants)
+                        ExpenseShareItem(
+                            share = share,
+                            participants = participants,
+                            loggedInUserId = loggedInUserId,
+                            onMarkPaid = {
+                                // backend update
+                                shareViewModel.updateShare(
+                                    share.id!!,
+                                    share.copy(paid = 1)
+                                )
+                                // local UI update
+                                sharesForThisExpense = sharesForThisExpense.map {
+                                    if (it.id == share.id) it.copy(paid = 1) else it
+                                }
+                            }
+                        )
                         Spacer(Modifier.height(8.dp))
                     }
                 }
@@ -136,11 +154,18 @@ fun ExpandableExpenseCard(
 
 
 @Composable
-fun ExpenseShareItem(share: ExpenseShare, participants: List<User>) {
-    val paidColor = if (share.paid == 1)
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-    else
-        MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
+fun ExpenseShareItem(
+    share: ExpenseShare,
+    participants: List<User>,
+    loggedInUserId: Int,
+    onMarkPaid: () -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
+    val paidColor =
+        if (share.paid == 1)
+            colors.primary.copy(alpha = 0.15f)
+        else
+            colors.secondary.copy(alpha = 0.12f)
 
     val userName = participants.find { it.id == share.user_id }?.let { "${it.name} ${it.lastname}" } ?: "Unknown"
 
@@ -157,11 +182,17 @@ fun ExpenseShareItem(share: ExpenseShare, participants: List<User>) {
         ) {
             Column {
                 Text(userName, fontWeight = FontWeight.Bold)
-                Text("Owes: $${share.amount_owed}")
+                Text("Owes: ${share.amount_owed}€")
             }
 
-            IconButton(onClick = { /* TODO: notificación */ }) {
-                Icon(Icons.Default.Notifications, contentDescription = "notify")
+            if (share.user_id == loggedInUserId && share.paid == 0) {
+                Button(onClick = onMarkPaid) {
+                    Text("I paid")
+                }
+            } else {
+                IconButton(onClick = { /* TODO: notification */ }) {
+                    Icon(Icons.Default.Notifications, contentDescription = "notify")
+                }
             }
         }
     }
@@ -174,7 +205,10 @@ fun GroupDetailScreen(
     groupUserViewModel: GroupUserViewModel,
     expenseViewModel: ExpenseViewModel,
     shareViewModel: ExpenseShareViewModel,
-    navController: NavController
+    navController: NavController,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+    loggedInUserId: Int
 ) {
     val colors = MaterialTheme.colorScheme
     val group by groupViewModel.selectedGroup.collectAsState()
@@ -199,7 +233,7 @@ fun GroupDetailScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            AppTopBar()
+            AppTopBar(isDarkTheme = isDarkTheme, onToggleTheme = onToggleTheme)
 
             Spacer(Modifier.height(8.dp))
 
@@ -237,7 +271,17 @@ fun GroupDetailScreen(
 
                             Spacer(Modifier.height(16.dp))
 
-                            // Participantes
+                            // 🔹 View Balances button ΠΑΝΩ ΠΑΝΩ (στο group card)
+                            Button(
+                                onClick = { navController.navigate("balances/$groupId") },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("View Balances")
+                            }
+
+                            Spacer(Modifier.height(16.dp))
+
+                            // Members
                             Text("Members", fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(8.dp))
 
@@ -268,7 +312,22 @@ fun GroupDetailScreen(
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
 
-                            Text("Expenses", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                "Expenses",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(Modifier.height(8.dp))
+
+                            // 🔹 Create Expense ΚΑΤΩ ΑΠΟ ΤΟΝ TITLE "Expenses"
+                            Button(
+                                onClick = { navController.navigate("addExpense/$groupId") },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Create Expense")
+                            }
+
                             Spacer(Modifier.height(12.dp))
 
                             expenses.forEach { expense ->
@@ -276,16 +335,12 @@ fun GroupDetailScreen(
                                     expense = expense,
                                     shareViewModel = shareViewModel,
                                     participants = participants,
-                                    colors = colors
+                                    colors = colors,
+                                    isDarkTheme = isDarkTheme,
+                                    onToggleTheme = onToggleTheme,
+                                    loggedInUserId = loggedInUserId
                                 )
                                 Spacer(Modifier.height(12.dp))
-                            }
-
-                            Button(
-                                onClick = { navController.navigate("addExpense/$groupId")  },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Create Expense")
                             }
                         }
                     }

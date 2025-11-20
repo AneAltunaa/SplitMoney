@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -17,7 +18,8 @@ import androidx.compose.ui.unit.dp
 fun LoginScreen(
     onLogin: (email: String, password: String) -> Unit,
     onRegister: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    loginError: String?
 ) {
     val colors = MaterialTheme.colorScheme
 
@@ -78,11 +80,22 @@ fun LoginScreen(
                     value = password,
                     onValueChange = { password = it },
                     label = "Password"
-                    // Αν το CustomTextField υποστηρίζει visualTransformation, βάλε το εκεί
                     // visualTransformation = PasswordVisualTransformation()
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                if (loginError != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = loginError,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
 
                 Button(
                     onClick = {

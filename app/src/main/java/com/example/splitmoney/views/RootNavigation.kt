@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.rememberNavController
+import com.example.splitmoney.viewModels.BalanceViewModel
 import com.example.splitmoney.viewModels.ExpenseShareViewModel
 import com.example.splitmoney.viewModels.ExpenseViewModel
 import com.example.splitmoney.viewModels.GroupUserViewModel
@@ -18,7 +19,10 @@ fun RootNavigation(groupViewModel: GroupViewModel,
                    expenseShareViewModel: ExpenseShareViewModel,
                    expenseViewModel: ExpenseViewModel,
                    groupUserViewModel: GroupUserViewModel,
-                   userViewModel: UserViewModel
+                   userViewModel: UserViewModel,
+                   balanceViewModel: BalanceViewModel,
+                   isDarkTheme: Boolean,
+                   onToggleTheme: () -> Unit
 ) {
     val navController = rememberNavController()
 
@@ -40,12 +44,13 @@ fun RootNavigation(groupViewModel: GroupViewModel,
         // 2) Login
         composable("login") {
             val loggedUserId by userViewModel.loggedUserId.collectAsState()
+            val loginError by userViewModel.loginError.collectAsState()
 
             LaunchedEffect(loggedUserId) {
-                loggedUserId?.let { uid ->
-                    // ▼▼▼ 追加: ログイン成功（ID取得）時にFCMトークンを登録 ▼▼▼
-                    userViewModel.registerFcmToken(uid)
-                    // ▲▲▲ 追加ここまで ▲▲▲
+                if (loggedUserId != null) {
+                    userViewModel.clearLoginError()
+
+                    userViewModel.registerFcmToken(loggedUserId!!)
 
                     navController.navigate("main") {
                         popUpTo("first") { inclusive = true }
@@ -55,6 +60,7 @@ fun RootNavigation(groupViewModel: GroupViewModel,
 
             LoginScreen(
                 onLogin = { email, password ->
+                    userViewModel.clearLoginError()
                     userViewModel.login(email, password)
                 },
                 onRegister = {
@@ -64,7 +70,8 @@ fun RootNavigation(groupViewModel: GroupViewModel,
                     navController.navigate("first") {
                         popUpTo("first") { inclusive = true }
                     }
-                }
+                },
+                loginError = loginError
             )
         }
 
@@ -82,13 +89,16 @@ fun RootNavigation(groupViewModel: GroupViewModel,
             )
         }
 
-        // 4) Main app (εκεί που έχεις ήδη το navigation σου)
         composable("main") {
-            AppNavigation(groupViewModel,
-                expenseShareViewModel,
-                expenseViewModel,
-                groupUserViewModel,
-                userViewModel
+            AppNavigation(
+                groupViewModel = groupViewModel,
+                expenseShareViewModel = expenseShareViewModel,
+                expenseViewModel = expenseViewModel,
+                groupUserViewModel = groupUserViewModel,
+                userViewModel = userViewModel,
+                balanceViewModel = balanceViewModel,
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
             )
         }
 

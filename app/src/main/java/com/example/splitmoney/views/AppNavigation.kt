@@ -14,7 +14,10 @@ fun AppNavigation(
     expenseShareViewModel: ExpenseShareViewModel,
     expenseViewModel: ExpenseViewModel,
     groupUserViewModel: GroupUserViewModel,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    balanceViewModel: BalanceViewModel,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
 ) {
     val userId by userViewModel.loggedUserId.collectAsState()
     if (userId == null) return
@@ -23,11 +26,23 @@ fun AppNavigation(
     NavHost(navController = navController, startDestination = "main") {
 
         composable("main") {
-            MainScreen(viewModel = groupViewModel, navController = navController, onAddGroupClick = { navController.navigate("addGroup") }, userId = userId!!)
+            MainScreen(
+                viewModel = groupViewModel,
+                navController = navController,
+                onAddGroupClick = { navController.navigate("addGroup") },
+                userId = userId!!,
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
+            )
         }
 
         composable("profile") {
-            UserProfileScreen(userViewModel = userViewModel, navController = navController)
+            UserProfileScreen(
+                userViewModel = userViewModel,
+                navController = navController,
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
+            )
         }
 
         composable("updateUser"){
@@ -43,7 +58,9 @@ fun AppNavigation(
                 groupViewModel = groupViewModel,
                 userViewModel = userViewModel,
                 loggedInUserId = userId!!,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
             )
         }
 
@@ -53,10 +70,13 @@ fun AppNavigation(
                 GroupDetailScreen(
                     groupId = groupId,
                     groupViewModel = groupViewModel,
-                    groupUserViewModel,
-                    expenseViewModel,
+                    groupUserViewModel = groupUserViewModel,
+                    expenseViewModel = expenseViewModel,
                     shareViewModel = expenseShareViewModel,
-                    navController = navController
+                    navController = navController,
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme,
+                    loggedInUserId = userId!!
                 )
             }
         }
@@ -68,9 +88,26 @@ fun AppNavigation(
                     groupId = groupId,
                     loggedInUserId = userId!!,
                     expenseViewModel = expenseViewModel,
-                    onBack = { navController.popBackStack() }
+                    groupUserViewModel = groupUserViewModel,
+                    onBack = { navController.popBackStack() },
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme
                 )
             }
         }
+        composable("balances/{groupId}") { backStack ->
+            val groupId = backStack.arguments?.getString("groupId")?.toInt()
+            if (groupId != null) {
+                BalancesScreen(
+                    groupId = groupId,
+                    balanceViewModel = balanceViewModel,
+                    navController = navController,
+                    loggedInUserId = userId!!,
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme
+                )
+            }
+        }
+
     }
 }

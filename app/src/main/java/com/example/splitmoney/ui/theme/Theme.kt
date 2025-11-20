@@ -12,9 +12,13 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.material3.CheckboxDefaults.colors
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-
-
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 
 private val LightColorScheme = lightColorScheme(
@@ -26,6 +30,9 @@ private val LightColorScheme = lightColorScheme(
     onBackground = LightOnBackground,
     surface = LightBackground,
     onSurface = LightOnBackground,
+    surfaceVariant = Color(0xFFE0F2EF),
+    onSurfaceVariant = LightOnBackground,
+    outline = LightSecondaryColor
 )
 
 // ✅ Το Dark theme σου
@@ -37,17 +44,31 @@ private val DarkColorScheme = darkColorScheme(
     background = DarkBackground,
     onBackground = DarkOnBackground,
     surface = DarkSurface,
-    onSurface = DarkOnSurface
+    onSurface = DarkOnSurface,
+    surfaceVariant = DarkSurface,
+    onSurfaceVariant = DarkOnSurface,
+    outline = DarkOnBackground
 )
 @Composable
 fun SplitMoneyTheme(
-    darkTheme: Boolean = false,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colors: ColorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
+    // Obravnava barve vrstice stanja (Status Bar)
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            window.statusBarColor = colorScheme.primary.toArgb()
+            // Določi barvo ikon v vrstici stanja (light/dark icons)
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        }
+    }
 
     MaterialTheme(
-        colorScheme = colors,
+        colorScheme = colorScheme,
         typography = Typography,
         content = content
     )
