@@ -214,5 +214,124 @@ def delete_share(id):
     query("DELETE FROM expense_shares WHERE id=?", (id,))
     return jsonify({"message": "Share deleted"})
 
+# ---------- GROUP BALANCES ----------
+@app.get("/groups/<int:gid>/balances")
+def get_group_balances(gid):
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    # 1) Όλα τα μέλη του group
+    cur.execute("""
+        SELECT u.id, u.name, u.lastname
+        FROM users u
+        JOIN group_users gu ON u.id = gu.user_id
+        WHERE gu.group_id = ?
+    """, (gid,))
+    users = cur.fetchall()
+    user_ids = [u["id"] for u in users]
+
+    net = {uid: 0.0 for uid in user_ids}
+
+    # 2) Όλα τα shares για τα expenses του group
+    cur.execute("""
+        SELECT
+            es.user_id AS debtor_id,
+            es.amount_owed,
+            e.paid_by AS payer_id
+        FROM expense_shares es
+        JOIN expenses e ON es.expense_id = e.id
+        WHERE e.group_id = ?
+          AND es.paid = 0
+    """, (gid,))
+
+    for row in cur.fetchall():
+        debtor = row["debtor_id"]
+        payer = row["payer_id"]
+        amount = row["amount_owed"]
+
+        if debtor not in net:
+            net[debtor] = 0.0
+        if payer not in net:
+            net[payer] = 0.0
+
+        net[debtor] -= amount
+        net[payer] += amount
+
+    # 3) Debtors / creditors
+    debtors = []
+    creditors = []
+
+    for uid, balance in net.items():
+        if abs(balance) < 0.01:
+            continue
+        if balance > 0:
+            creditors.append({"user_id": uid, "amount": balance})
+        else:
+            debtors.append({"user_id": uid, "amount": -balance})
+
+    # 4) Greedy balancing
+    settlements = []
+    i = j = 0
+
+    while i < len(debtors) and j < len(creditors):
+        d = debtors[i]
+        c = creditors[j]
+
+        pay = min(d["amount"], c["amount"])
+        settlements.append({
+            "from": d["user_id"],
+            "to": c["user_id"],
+            "amount": round(pay, 2)
+        })
+
+        d["amount"] -= pay
+        c["amount"] -= pay
+
+        if d["amount"] <= 0.01:
+            i += 1
+        if c["amount"] <= 0.01:
+            j += 1
+
+    result = {
+        "net_balances": [
+            {
+                "user_id": u["id"],
+                "name": f"{u['name']} {u['lastname']}",
+                "balance": round(net[u["id"]], 2)
+            }
+            for u in users
+        ],
+        "settlements": settlements
+    }
+
+    conn.close()
+    return jsonify(result)
+
+@app.post("/groups/<int:gid>/settle")
+def settle_group_debts(gid):
+    d = request.json
+    user_id = d["user_id"]
+
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    # Βάζουμε paid = 1 σε ΟΛΑ τα shares αυτού του user στο συγκεκριμένο group
+    cur.execute("""
+        UPDATE expense_shares
+        SET paid = 1
+        WHERE user_id = ?
+          AND paid = 0
+          AND expense_id IN (
+              SELECT id FROM expenses WHERE group_id = ?
+          )
+    """, (user_id, gid))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Group debts settled", "user_id": user_id, "group_id": gid})
+
 if __name__ == "__main__":
     app.run(debug=True)

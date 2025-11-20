@@ -25,10 +25,32 @@ fun RootNavigation(groupViewModel: GroupViewModel,
                    onToggleTheme: () -> Unit
 ) {
     val navController = rememberNavController()
+    val loggedUserId by userViewModel.loggedUserId.collectAsState()
+
+    val startDestination = if (loggedUserId != null) "main" else "first"
+
+    LaunchedEffect(loggedUserId) {
+        if (loggedUserId == null) {
+            val currentRoute = navController.currentDestination?.route
+            if (currentRoute != "login" && currentRoute != "register" && currentRoute != "first") {
+                navController.navigate("login") {
+                    popUpTo(navController.graph.id) { inclusive = true }
+                }
+            }
+        } else {
+            val currentRoute = navController.currentDestination?.route
+            if (currentRoute == "login" || currentRoute == "register" || currentRoute == "first") {
+                navController.navigate("main") {
+                    popUpTo(navController.graph.id) { inclusive = true }
+                }
+            }
+        }
+    }
+
 
     NavHost(
         navController = navController,
-        startDestination = "first"
+        startDestination = startDestination
     ) {
         // 1) Πρώτη οθόνη
         composable("first") {
@@ -90,16 +112,18 @@ fun RootNavigation(groupViewModel: GroupViewModel,
         }
 
         composable("main") {
-            AppNavigation(
-                groupViewModel = groupViewModel,
-                expenseShareViewModel = expenseShareViewModel,
-                expenseViewModel = expenseViewModel,
-                groupUserViewModel = groupUserViewModel,
-                userViewModel = userViewModel,
-                balanceViewModel = balanceViewModel,
-                isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
-            )
+            if (loggedUserId != null) {
+                AppNavigation(
+                    groupViewModel = groupViewModel,
+                    expenseShareViewModel = expenseShareViewModel,
+                    expenseViewModel = expenseViewModel,
+                    groupUserViewModel = groupUserViewModel,
+                    userViewModel = userViewModel,
+                    balanceViewModel = balanceViewModel,
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme
+                )
+            }
         }
 
 

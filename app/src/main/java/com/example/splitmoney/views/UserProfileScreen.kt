@@ -28,8 +28,12 @@ fun UserProfileScreen(
     val currentUser by userViewModel.currentUser.collectAsState()
     val loggedUserId by userViewModel.loggedUserId.collectAsState()
 
+    if (loggedUserId == null) {
+        return
+    }
+
     LaunchedEffect(loggedUserId) {
-        loggedUserId?.let { userViewModel.loadUserById(it) }
+        userViewModel.loadUserById(loggedUserId!!)
     }
 
     Box(modifier = Modifier.fillMaxSize().background(colorScheme.background)) {
@@ -57,14 +61,12 @@ fun UserProfileScreen(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp,
                             fontStyle = FontStyle.Italic,
-                            color = colorScheme.onBackground,
                             modifier = Modifier.fillMaxWidth().padding(top = 20.dp, start = 26.dp)
                         )
                         Text("Last name: ${currentUser!!.lastname}",
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp,
                             fontStyle = FontStyle.Italic,
-                            color = colorScheme.onBackground,
                             modifier = Modifier.fillMaxWidth().padding(top = 10.dp, start = 26.dp)
                         )
                         Spacer(modifier = Modifier.height(20.dp))
@@ -72,14 +74,12 @@ fun UserProfileScreen(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp,
                             fontStyle = FontStyle.Italic,
-                            color = colorScheme.onBackground,
                             modifier = Modifier.fillMaxWidth().padding(top = 20.dp, start = 26.dp)
                         )
                         Text("Phone: ${currentUser!!.phone}",
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp,
                             fontStyle = FontStyle.Italic,
-                            color = colorScheme.onBackground,
                             modifier = Modifier.fillMaxWidth().padding(top = 10.dp, start = 26.dp)
                         )
                         Spacer(modifier = Modifier.height(50.dp))
@@ -91,9 +91,25 @@ fun UserProfileScreen(
                             containerColor = colorScheme.primary,
                             contentColor = colorScheme.onPrimary
                         ),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth(0.6f)
                     ) {
                         Text("Update User")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedButton(
+                        onClick = {
+                            userViewModel.logout()
+                        },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = colorScheme.error
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth(0.6f)
+                    ) {
+                        Text("Log Out")
                     }
                 }
             }

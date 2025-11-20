@@ -20,7 +20,7 @@ fun AppNavigation(
     onToggleTheme: () -> Unit
 ) {
     val userId by userViewModel.loggedUserId.collectAsState()
-    if (userId == null) return
+
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "main") {

@@ -22,6 +22,9 @@ import com.example.splitmoney.viewModels.GroupUserViewModel
 import com.example.splitmoney.viewModels.GroupViewModel
 import com.example.splitmoney.viewModels.UserViewModel
 import com.example.splitmoney.views.RootNavigation
+import com.example.splitmoney.data.repository.UserRepository // Potreben uvoz za Repozitorij
+import androidx.lifecycle.ViewModel // Potreben uvoz
+import androidx.lifecycle.ViewModelProvider // Potreben uvoz za Factory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,17 +36,19 @@ class MainActivity : ComponentActivity() {
             var isDarkTheme by remember { mutableStateOf(systemDarkTheme) }
             val onToggleTheme: () -> Unit = { isDarkTheme = !isDarkTheme }
 
+            val userRepository = remember { UserRepository() }
+            val viewModelFactory = remember { ViewModelFactory(userRepository) }
             // 2. Πέρασμα της κατάστασης στο SplitMoneyTheme
             SplitMoneyTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val groupViewModel: GroupViewModel = viewModel()
-                    val expenseShareViewModel: ExpenseShareViewModel = viewModel()
-                    val expenseViewModel: ExpenseViewModel = viewModel()
-                    val groupUserViewModel: GroupUserViewModel = viewModel()
-                    val userViewModel: UserViewModel = viewModel()
+                    val groupViewModel: GroupViewModel = viewModel(factory = viewModelFactory)
+                    val expenseShareViewModel: ExpenseShareViewModel = viewModel(factory = viewModelFactory)
+                    val expenseViewModel: ExpenseViewModel = viewModel(factory = viewModelFactory)
+                    val groupUserViewModel: GroupUserViewModel = viewModel(factory = viewModelFactory)
+                    val userViewModel: UserViewModel = viewModel(factory = viewModelFactory)
                     val balanceViewModel: BalanceViewModel = viewModel()
 
                     // 3. Κλήση του RootNavigation με τους νέους παραμέτρους
@@ -59,6 +64,20 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+class ViewModelFactory(private val userRepository: UserRepository) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return when {
+            modelClass.isAssignableFrom(UserViewModel::class.java) -> UserViewModel(userRepository) as T
+            modelClass.isAssignableFrom(GroupViewModel::class.java) -> GroupViewModel() as T
+            modelClass.isAssignableFrom(ExpenseShareViewModel::class.java) -> ExpenseShareViewModel() as T
+            modelClass.isAssignableFrom(ExpenseViewModel::class.java) -> ExpenseViewModel() as T
+            modelClass.isAssignableFrom(GroupUserViewModel::class.java) -> GroupUserViewModel() as T
+            else -> throw IllegalArgumentException("Neznan ViewModel razred: ${modelClass.name}")
         }
     }
 }
