@@ -110,9 +110,44 @@ def delete_participant():
 @app.post("/expenses")
 def add_expense():
     d = request.json
-    query("INSERT INTO expenses (group_id, description, total_amount, paid_by) VALUES (?, ?, ?, ?)",
-          (d["group_id"], d["description"], d["total_amount"], d["paid_by"]))
-    return jsonify({"message": "Expense added"})
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+
+    cur.execute(
+        "INSERT INTO expenses (group_id, description, total_amount, paid_by) VALUES (?, ?, ?, ?)",
+        (d["group_id"], d["description"], d["total_amount"], d["paid_by"])
+    )
+    expense_id = cur.lastrowid
+
+    shares = d.get("shares")
+
+    if shares:
+
+        for s in shares:
+            cur.execute("""
+                INSERT INTO expense_shares (expense_id, user_id, amount_owed, paid)
+                VALUES (?, ?, ?, 0)
+            """, (expense_id, s["user_id"], s["amount_owed"]))
+    else:
+
+        cur.execute("SELECT user_id FROM group_users WHERE group_id = ?", (d["group_id"],))
+        members = [r["user_id"] for r in cur.fetchall()]
+        if members:
+            share_amount = float(d["total_amount"]) / len(members)
+            for uid in members:
+                cur.execute("""
+                    INSERT INTO expense_shares (expense_id, user_id, amount_owed, paid)
+                    VALUES (?, ?, ?, 0)
+                """, (expense_id, uid, share_amount))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Expense added", "expense_id": expense_id})
+
+
 
 @app.get("/expenses/<int:gid>")
 def get_expenses_by_group(gid):
@@ -153,6 +188,102 @@ def update_share(id):
 def delete_share(id):
     query("DELETE FROM expense_shares WHERE id=?", (id,))
     return jsonify({"message": "Share deleted"})
+
+
+# ---------- GROUP BALANCES ----------
+@app.get("/groups/<int:gid>/balances")
+def get_group_balances(gid):
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    # 1) Όλα τα μέλη του group
+    cur.execute("""
+        SELECT u.id, u.name, u.lastname
+        FROM users u
+        JOIN group_users gu ON u.id = gu.user_id
+        WHERE gu.group_id = ?
+    """, (gid,))
+    users = cur.fetchall()
+    user_ids = [u["id"] for u in users]
+
+    net = {uid: 0.0 for uid in user_ids}
+
+    # 2) Όλα τα shares για τα expenses του group
+    cur.execute("""
+        SELECT
+            es.user_id AS debtor_id,
+            es.amount_owed,
+            e.paid_by AS payer_id
+        FROM expense_shares es
+        JOIN expenses e ON es.expense_id = e.id
+        WHERE e.group_id = ?
+          AND es.paid = 0
+    """, (gid,))
+
+    for row in cur.fetchall():
+        debtor = row["debtor_id"]
+        payer = row["payer_id"]
+        amount = row["amount_owed"]
+
+        if debtor not in net:
+            net[debtor] = 0.0
+        if payer not in net:
+            net[payer] = 0.0
+
+        net[debtor] -= amount
+        net[payer] += amount
+
+    # 3) Debtors / creditors
+    debtors = []
+    creditors = []
+
+    for uid, balance in net.items():
+        if abs(balance) < 0.01:
+            continue
+        if balance > 0:
+            creditors.append({"user_id": uid, "amount": balance})
+        else:
+            debtors.append({"user_id": uid, "amount": -balance})
+
+    # 4) Greedy balancing
+    settlements = []
+    i = j = 0
+
+    while i < len(debtors) and j < len(creditors):
+        d = debtors[i]
+        c = creditors[j]
+
+        pay = min(d["amount"], c["amount"])
+        settlements.append({
+            "from": d["user_id"],
+            "to": c["user_id"],
+            "amount": round(pay, 2)
+        })
+
+        d["amount"] -= pay
+        c["amount"] -= pay
+
+        if d["amount"] <= 0.01:
+            i += 1
+        if c["amount"] <= 0.01:
+            j += 1
+
+    result = {
+        "net_balances": [
+            {
+                "user_id": u["id"],
+                "name": f"{u['name']} {u['lastname']}",
+                "balance": round(net[u["id"]], 2)
+            }
+            for u in users
+        ],
+        "settlements": settlements
+    }
+
+    conn.close()
+    return jsonify(result)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

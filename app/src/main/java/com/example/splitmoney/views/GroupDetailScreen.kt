@@ -110,7 +110,7 @@ fun ExpandableExpenseCard(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "$${expense.total_amount}",
+                        "${expense.total_amount}€",
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
@@ -157,7 +157,7 @@ fun ExpenseShareItem(share: ExpenseShare, participants: List<User>) {
         ) {
             Column {
                 Text(userName, fontWeight = FontWeight.Bold)
-                Text("Owes: $${share.amount_owed}")
+                Text("Owes: ${share.amount_owed}€")
             }
 
             IconButton(onClick = { /* TODO: notificación */ }) {
@@ -237,7 +237,17 @@ fun GroupDetailScreen(
 
                             Spacer(Modifier.height(16.dp))
 
-                            // Participantes
+                            // 🔹 View Balances button ΠΑΝΩ ΠΑΝΩ (στο group card)
+                            Button(
+                                onClick = { navController.navigate("balances/$groupId") },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("View Balances")
+                            }
+
+                            Spacer(Modifier.height(16.dp))
+
+                            // Members
                             Text("Members", fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(8.dp))
 
@@ -259,7 +269,7 @@ fun GroupDetailScreen(
                 }
 
                 // -------------------------------
-                // EXPENSES
+                // 2) EXPENSES
                 // -------------------------------
                 item {
                     Card(
@@ -268,7 +278,22 @@ fun GroupDetailScreen(
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
 
-                            Text("Expenses", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                "Expenses",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(Modifier.height(8.dp))
+
+                            // 🔹 Create Expense ΚΑΤΩ ΑΠΟ ΤΟΝ TITLE "Expenses"
+                            Button(
+                                onClick = { navController.navigate("addExpense/$groupId") },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Create Expense")
+                            }
+
                             Spacer(Modifier.height(12.dp))
 
                             expenses.forEach { expense ->
@@ -279,13 +304,6 @@ fun GroupDetailScreen(
                                     colors = colors
                                 )
                                 Spacer(Modifier.height(12.dp))
-                            }
-
-                            Button(
-                                onClick = { navController.navigate("addExpense/$groupId")  },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Create Expense")
                             }
                         }
                     }
@@ -302,6 +320,3 @@ fun GroupDetailScreen(
         )
     }
 }
-
-
-

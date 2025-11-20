@@ -14,7 +14,8 @@ fun AppNavigation(
     expenseShareViewModel: ExpenseShareViewModel,
     expenseViewModel: ExpenseViewModel,
     groupUserViewModel: GroupUserViewModel,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    balanceViewModel: BalanceViewModel
 ) {
     val userId by userViewModel.loggedUserId.collectAsState()
     if (userId == null) return
@@ -53,8 +54,8 @@ fun AppNavigation(
                 GroupDetailScreen(
                     groupId = groupId,
                     groupViewModel = groupViewModel,
-                    groupUserViewModel,
-                    expenseViewModel,
+                    groupUserViewModel = groupUserViewModel,
+                    expenseViewModel = expenseViewModel,
                     shareViewModel = expenseShareViewModel,
                     navController = navController
                 )
@@ -68,9 +69,21 @@ fun AppNavigation(
                     groupId = groupId,
                     loggedInUserId = userId!!,
                     expenseViewModel = expenseViewModel,
+                    groupUserViewModel = groupUserViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }
         }
+        composable("balances/{groupId}") { backStack ->
+            val groupId = backStack.arguments?.getString("groupId")?.toInt()
+            if (groupId != null) {
+                BalancesScreen(
+                    groupId = groupId,
+                    balanceViewModel = balanceViewModel,
+                    navController = navController
+                )
+            }
+        }
+
     }
 }
