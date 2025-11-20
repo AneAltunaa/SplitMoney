@@ -24,10 +24,32 @@ fun RootNavigation(
     onToggleTheme: () -> Unit
 ) {
     val navController = rememberNavController()
+    val loggedUserId by userViewModel.loggedUserId.collectAsState()
+
+    val startDestination = if (loggedUserId != null) "main" else "first"
+
+    LaunchedEffect(loggedUserId) {
+        if (loggedUserId == null) {
+            val currentRoute = navController.currentDestination?.route
+            if (currentRoute != "login" && currentRoute != "register" && currentRoute != "first") {
+                navController.navigate("login") {
+                    popUpTo(navController.graph.id) { inclusive = true }
+                }
+            }
+        } else {
+            val currentRoute = navController.currentDestination?.route
+            if (currentRoute == "login" || currentRoute == "register" || currentRoute == "first") {
+                navController.navigate("main") {
+                    popUpTo(navController.graph.id) { inclusive = true }
+                }
+            }
+        }
+    }
+
 
     NavHost(
         navController = navController,
-        startDestination = "first"
+        startDestination = startDestination
     ) {
         composable("first") {
             FirstScreen(
@@ -40,17 +62,7 @@ fun RootNavigation(
         }
 
         composable("login") {
-            val loggedUserId by userViewModel.loggedUserId.collectAsState()
             val loginError by userViewModel.loginError.collectAsState()
-
-            LaunchedEffect(loggedUserId) {
-                if (loggedUserId != null) {
-                    userViewModel.clearLoginError()
-                    navController.navigate("main") {
-                        popUpTo("first") { inclusive = true }
-                    }
-                }
-            }
 
             LoginScreen(
                 onLogin = { email, password ->
@@ -83,17 +95,17 @@ fun RootNavigation(
         }
 
         composable("main") {
-            AppNavigation(
-                groupViewModel,
-                expenseShareViewModel,
-                expenseViewModel,
-                groupUserViewModel,
-                userViewModel,
-                isDarkTheme = isDarkTheme,
-                onToggleTheme = onToggleTheme
-            )
+            if (loggedUserId != null) {
+                AppNavigation(
+                    groupViewModel,
+                    expenseShareViewModel,
+                    expenseViewModel,
+                    groupUserViewModel,
+                    userViewModel,
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme
+                )
+            }
         }
-
-
     }
 }

@@ -29,6 +29,9 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
         _foundUser.value = null
     }
 
+    /**
+     * Public method to clear the login error state.
+     */
     fun clearLoginError() {
         _loginError.value = null
     }
@@ -68,7 +71,7 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
                 _loggedUserId.value = user.id
                 Log.i("LOGIN_FLOW", "Login successful for user ID: ${user.id}")
             } else {
-                val error = "Invalid username or password!"
+                val error = "Invalid credentials"
                 _loginError.value = error
                 Log.e("LOGIN_FLOW", "Login failed. Error: $error")
             }
@@ -77,6 +80,13 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
             _loginError.value = error
             Log.e("LOGIN_FLOW", "Login failed with exception: ${e.message}")
         }
+    }
+
+    fun logout() {
+        _loggedUserId.value = null
+        _currentUser.value = null
+        _loginError.value = null
+        Log.i("LOGOUT_FLOW", "User logged out.")
     }
 
     fun updateUser(id: Int, user: User) = viewModelScope.launch { repo.updateUser(id, user) }
