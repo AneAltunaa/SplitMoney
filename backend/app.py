@@ -284,6 +284,32 @@ def get_group_balances(gid):
     conn.close()
     return jsonify(result)
 
+@app.post("/groups/<int:gid>/settle")
+def settle_group_debts(gid):
+    d = request.json
+    user_id = d["user_id"]
+
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    # Βάζουμε paid = 1 σε ΟΛΑ τα shares αυτού του user στο συγκεκριμένο group
+    cur.execute("""
+        UPDATE expense_shares
+        SET paid = 1
+        WHERE user_id = ?
+          AND paid = 0
+          AND expense_id IN (
+              SELECT id FROM expenses WHERE group_id = ?
+          )
+    """, (user_id, gid))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Group debts settled", "user_id": user_id, "group_id": gid})
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

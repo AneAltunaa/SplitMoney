@@ -78,7 +78,8 @@ fun ExpandableExpenseCard(
     participants: List<User>,
     colors: ColorScheme,
     isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit
+    onToggleTheme: () -> Unit,
+    loggedInUserId: Int
 ) {
     var expanded by remember { mutableStateOf(false) }
     var sharesForThisExpense by remember { mutableStateOf<List<ExpenseShare>>(emptyList()) }
@@ -127,7 +128,22 @@ fun ExpandableExpenseCard(
             AnimatedVisibility(expanded) {
                 Column(modifier = Modifier.padding(top = 12.dp)) {
                     sharesForThisExpense.forEach { share ->
-                        ExpenseShareItem(share, participants)
+                        ExpenseShareItem(
+                            share = share,
+                            participants = participants,
+                            loggedInUserId = loggedInUserId,
+                            onMarkPaid = {
+                                // backend update
+                                shareViewModel.updateShare(
+                                    share.id!!,
+                                    share.copy(paid = 1)
+                                )
+                                // local UI update
+                                sharesForThisExpense = sharesForThisExpense.map {
+                                    if (it.id == share.id) it.copy(paid = 1) else it
+                                }
+                            }
+                        )
                         Spacer(Modifier.height(8.dp))
                     }
                 }
@@ -138,11 +154,18 @@ fun ExpandableExpenseCard(
 
 
 @Composable
-fun ExpenseShareItem(share: ExpenseShare, participants: List<User>) {
-    val paidColor = if (share.paid == 1)
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-    else
-        MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
+fun ExpenseShareItem(
+    share: ExpenseShare,
+    participants: List<User>,
+    loggedInUserId: Int,
+    onMarkPaid: () -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
+    val paidColor =
+        if (share.paid == 1)
+            colors.primary.copy(alpha = 0.15f)
+        else
+            colors.secondary.copy(alpha = 0.12f)
 
     val userName = participants.find { it.id == share.user_id }?.let { "${it.name} ${it.lastname}" } ?: "Unknown"
 
@@ -162,8 +185,14 @@ fun ExpenseShareItem(share: ExpenseShare, participants: List<User>) {
                 Text("Owes: ${share.amount_owed}€")
             }
 
-            IconButton(onClick = { /* TODO: notificación */ }) {
-                Icon(Icons.Default.Notifications, contentDescription = "notify")
+            if (share.user_id == loggedInUserId && share.paid == 0) {
+                Button(onClick = onMarkPaid) {
+                    Text("I paid")
+                }
+            } else {
+                IconButton(onClick = { /* TODO: notification */ }) {
+                    Icon(Icons.Default.Notifications, contentDescription = "notify")
+                }
             }
         }
     }
@@ -178,7 +207,8 @@ fun GroupDetailScreen(
     shareViewModel: ExpenseShareViewModel,
     navController: NavController,
     isDarkTheme: Boolean,
-    onToggleTheme: () -> Unit
+    onToggleTheme: () -> Unit,
+    loggedInUserId: Int
 ) {
     val colors = MaterialTheme.colorScheme
     val group by groupViewModel.selectedGroup.collectAsState()
@@ -307,7 +337,8 @@ fun GroupDetailScreen(
                                     participants = participants,
                                     colors = colors,
                                     isDarkTheme = isDarkTheme,
-                                    onToggleTheme = onToggleTheme
+                                    onToggleTheme = onToggleTheme,
+                                    loggedInUserId = loggedInUserId
                                 )
                                 Spacer(Modifier.height(12.dp))
                             }

@@ -21,6 +21,7 @@ fun BalancesScreen(
     groupId: Int,
     balanceViewModel: BalanceViewModel,
     navController: NavController,
+    loggedInUserId: Int,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit
 ) {
@@ -63,6 +64,22 @@ fun BalancesScreen(
                     Text("Loading balances...", color = colors.onBackground)
                 } else {
 
+                    // 🔹 1) Βρίσκουμε το δικό σου net balance
+                    val myNet = balances.net_balances.find { it.user_id == loggedInUserId }
+
+                    // 🔹 2) Αν χρωστάς (balance < 0), δείχνουμε κουμπί "Settle my balance"
+                    if (myNet != null && myNet.balance < 0) {
+                        Spacer(Modifier.height(8.dp))
+                        Button(
+                            onClick = {
+                                balanceViewModel.settleMyDebts(groupId, loggedInUserId)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Settle my balance (${String.format("%.2f", -myNet.balance)} €)")
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
                     // -------- NET BALANCES (ποιος είναι + / -) --------
                     Card(
                         modifier = Modifier.fillMaxWidth(),

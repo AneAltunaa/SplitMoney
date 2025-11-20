@@ -75,7 +75,8 @@ fun AppNavigation(
                     shareViewModel = expenseShareViewModel,
                     navController = navController,
                     isDarkTheme = isDarkTheme,
-                    onToggleTheme = onToggleTheme
+                    onToggleTheme = onToggleTheme,
+                    loggedInUserId = userId!!
                 )
             }
         }
@@ -101,6 +102,7 @@ fun AppNavigation(
                     groupId = groupId,
                     balanceViewModel = balanceViewModel,
                     navController = navController,
+                    loggedInUserId = userId!!,
                     isDarkTheme = isDarkTheme,
                     onToggleTheme = onToggleTheme
                 )

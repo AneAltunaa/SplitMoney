@@ -18,4 +18,9 @@ class BalanceViewModel(
     fun loadBalances(groupId: Int) = viewModelScope.launch {
         _balances.value = groupRepo.getGroupBalances(groupId)
     }
+    fun settleMyDebts(groupId: Int, userId: Int) = viewModelScope.launch {
+        groupRepo.settleGroupDebts(groupId, userId)
+        // ξαναφορτώνουμε balances για να δούμε ενημερωμένα νούμερα
+        _balances.value = groupRepo.getGroupBalances(groupId)
+    }
 }

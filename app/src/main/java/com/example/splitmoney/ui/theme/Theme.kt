@@ -14,6 +14,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.material3.CheckboxDefaults.colors
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -29,6 +30,9 @@ private val LightColorScheme = lightColorScheme(
     onBackground = LightOnBackground,
     surface = LightBackground,
     onSurface = LightOnBackground,
+    surfaceVariant = Color(0xFFE0F2EF),
+    onSurfaceVariant = LightOnBackground,
+    outline = LightSecondaryColor
 )
 
 // ✅ Το Dark theme σου
@@ -40,7 +44,10 @@ private val DarkColorScheme = darkColorScheme(
     background = DarkBackground,
     onBackground = DarkOnBackground,
     surface = DarkSurface,
-    onSurface = DarkOnSurface
+    onSurface = DarkOnSurface,
+    surfaceVariant = DarkSurface,
+    onSurfaceVariant = DarkOnSurface,
+    outline = DarkOnBackground
 )
 @Composable
 fun SplitMoneyTheme(

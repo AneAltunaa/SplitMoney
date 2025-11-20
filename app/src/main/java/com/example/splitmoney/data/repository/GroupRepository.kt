@@ -16,4 +16,6 @@ class GroupRepository {
 
     suspend fun getGroupBalances(groupId: Int): GroupBalancesResponse =
         api.getGroupBalances(groupId)
+    suspend fun settleGroupDebts(groupId: Int, userId: Int) =
+        api.settleGroupDebts(groupId, mapOf("user_id" to userId))
 }
