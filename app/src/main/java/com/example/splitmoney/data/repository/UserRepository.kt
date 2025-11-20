@@ -24,5 +24,9 @@ class UserRepository {
     suspend fun getUserByMail(mail: String) = api.getUserByMail(mail)
     suspend fun updateUser(id: Int, user: User) = api.updateUser(id, user)
     suspend fun deleteUser(id: Int) = api.deleteUser(id)
+
+    suspend fun updateFcmToken(id: Int, token: String) {
+        api.updateFcmToken(id, mapOf("token" to token))
+    }
 }
 

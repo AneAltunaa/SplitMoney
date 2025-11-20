@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "900719320854",
+    "project_id": "splitmoneyappmsd",
+    "storage_bucket": "splitmoneyappmsd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900719320854:android:2a67dde4ea20a7314ffa37",
+        "android_client_info": {
+          "package_name": "com.example.splitmoney"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiem0MEy2EK187nOwebWqXAntn1lSeOUM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

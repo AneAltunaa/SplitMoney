@@ -42,7 +42,11 @@ fun RootNavigation(groupViewModel: GroupViewModel,
             val loggedUserId by userViewModel.loggedUserId.collectAsState()
 
             LaunchedEffect(loggedUserId) {
-                if (loggedUserId != null) {
+                loggedUserId?.let { uid ->
+                    // ▼▼▼ 追加: ログイン成功（ID取得）時にFCMトークンを登録 ▼▼▼
+                    userViewModel.registerFcmToken(uid)
+                    // ▲▲▲ 追加ここまで ▲▲▲
+
                     navController.navigate("main") {
                         popUpTo("first") { inclusive = true }
                     }

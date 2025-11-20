@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS users (
     lastname TEXT NOT NULL,
     mail TEXT NOT NULL,
     phone TEXT NOT NULL,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    fcm_token TEXT
 )
 """)
 

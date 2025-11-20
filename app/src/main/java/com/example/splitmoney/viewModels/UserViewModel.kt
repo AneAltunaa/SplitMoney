@@ -7,6 +7,8 @@ import com.example.splitmoney.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import com.google.firebase.messaging.FirebaseMessaging
+import android.util.Log
 
 class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewModel() {
     private val _users = MutableStateFlow<List<User>>(emptyList())
@@ -64,4 +66,30 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
 
     fun updateUser(id: Int, user: User) = viewModelScope.launch { repo.updateUser(id, user) }
     fun deleteUser(id: Int) = viewModelScope.launch { repo.deleteUser(id) }
+
+    fun registerFcmToken(userId: Int) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+            Log.d("FCM", "Token retrieved: $token")
+
+            // Send token to backend
+            viewModelScope.launch {
+                try {
+                    // repositoryに定義したメソッドを呼び出す
+                    // ※ ご自身のUserRepositoryの定義に合わせて repo.updateFcmToken を呼んでください
+                    // UserViewModel内で repository が private val repo で宣言されている前提です
+                    repo.updateFcmToken(userId, token)
+                    Log.d("FCM", "Token sent to server successfully")
+                } catch (e: Exception) {
+                    Log.e("FCM", "Failed to send token to server", e)
+                }
+            }
+        }
+    }
 }

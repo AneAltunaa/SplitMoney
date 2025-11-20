@@ -43,4 +43,7 @@ interface ApiService {
     @GET("expense_shares/{eid}") suspend fun getSharesByExpense(@Path("eid") eid: Int): List<ExpenseShare>
     @PUT("expense_shares/{id}") suspend fun updateShare(@Path("id") id: Int, @Body share: ExpenseShare): Map<String,String>
     @DELETE("expense_shares/{id}") suspend fun deleteShare(@Path("id") id: Int): Map<String,String>
+
+    @PUT("users/{id}/token")
+    suspend fun updateFcmToken(@Path("id") id: Int, @Body tokenData: Map<String, String>): Map<String, String>
 }
