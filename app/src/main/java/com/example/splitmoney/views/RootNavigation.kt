@@ -40,9 +40,11 @@ fun RootNavigation(groupViewModel: GroupViewModel,
         // 2) Login
         composable("login") {
             val loggedUserId by userViewModel.loggedUserId.collectAsState()
+            val loginError by userViewModel.loginError.collectAsState()
 
             LaunchedEffect(loggedUserId) {
                 if (loggedUserId != null) {
+                    userViewModel.clearLoginError()
                     navController.navigate("main") {
                         popUpTo("first") { inclusive = true }
                     }
@@ -51,6 +53,7 @@ fun RootNavigation(groupViewModel: GroupViewModel,
 
             LoginScreen(
                 onLogin = { email, password ->
+                    userViewModel.clearLoginError()
                     userViewModel.login(email, password)
                 },
                 onRegister = {
@@ -60,7 +63,8 @@ fun RootNavigation(groupViewModel: GroupViewModel,
                     navController.navigate("first") {
                         popUpTo("first") { inclusive = true }
                     }
-                }
+                },
+                loginError = loginError
             )
         }
 
