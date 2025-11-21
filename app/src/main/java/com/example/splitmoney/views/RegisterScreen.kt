@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -70,15 +71,15 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                CustomTextField(value = name, onValueChange = { name = it }, label = "Name")
+                CustomTextField(value = name, onValueChange = { name = it }, label = "Name", visualTransformation = VisualTransformation.None)
                 Spacer(modifier = Modifier.height(16.dp))
-                CustomTextField(value = surname, onValueChange = { surname = it }, label = "Surname")
+                CustomTextField(value = surname, onValueChange = { surname = it }, label = "Surname", visualTransformation = VisualTransformation.None)
                 Spacer(modifier = Modifier.height(16.dp))
-                CustomTextField(value = email, onValueChange = { email = it }, label = "Email")
+                CustomTextField(value = email, onValueChange = { email = it }, label = "Email", visualTransformation = VisualTransformation.None)
                 Spacer(modifier = Modifier.height(16.dp))
-                CustomTextField(value = phoneNumber, onValueChange = { phoneNumber = it }, label = "Phone Number")
+                CustomTextField(value = phoneNumber, onValueChange = { phoneNumber = it }, label = "Phone Number", visualTransformation = VisualTransformation.None)
                 Spacer(modifier = Modifier.height(16.dp))
-                CustomTextField(value = password, onValueChange = { password = it }, label = "Password")
+                CustomTextField(value = password, onValueChange = { password = it }, label = "Password", visualTransformation = PasswordVisualTransformation() )
 
                 Spacer(modifier = Modifier.height(24.dp))
 

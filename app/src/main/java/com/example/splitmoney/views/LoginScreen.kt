@@ -11,8 +11,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+
+// CustomTextField z barvami in zaobljenimi robovi
+@Composable
+fun CustomTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    visualTransformation: VisualTransformation = VisualTransformation.None
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        visualTransformation = visualTransformation,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp)
+    )
+}
 
 @Composable
 fun LoginScreen(
@@ -55,7 +74,7 @@ fun LoginScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(all = 16.dp),
+                    .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -69,20 +88,24 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Email plain text
                 CustomTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = "Email"
+                    label = "Email",
+                    visualTransformation = VisualTransformation.None
                 )
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // Password masked
                 CustomTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = "Password"
-                    // visualTransformation = PasswordVisualTransformation()
+                    label = "Password",
+                    visualTransformation = PasswordVisualTransformation()
                 )
 
+                // Login error
                 if (loginError != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -97,15 +120,15 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
+                // Login button
                 Button(
-                    onClick = {
-                        onLogin(email, password)
-                    },
+                    onClick = { onLogin(email, password) },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.primary,
                         contentColor = colors.onPrimary
                     ),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Login")
                 }
@@ -119,13 +142,15 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Register button
                 Button(
                     onClick = { onRegister() },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.primary,
                         contentColor = colors.onPrimary
                     ),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Register")
                 }
