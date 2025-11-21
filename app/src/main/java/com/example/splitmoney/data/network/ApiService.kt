@@ -4,9 +4,9 @@ import com.example.splitmoney.data.model.Group
 import com.example.splitmoney.data.model.User
 import com.example.splitmoney.data.model.GroupUser
 import com.example.splitmoney.data.model.Expense
+import com.example.splitmoney.data.model.ExpenseRequest
 import com.example.splitmoney.data.model.ExpenseShare
 import com.example.splitmoney.data.model.GroupBalancesResponse
-import com.example.splitmoney.data.model.ExpenseRequest
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -52,7 +52,6 @@ interface ApiService {
         @Path("gid") gid: Int,
         @Body body: Map<String, Int> // π.χ. { "user_id": 5 }
     ): Map<String, String>
-
     @PUT("users/{id}/token")
     suspend fun updateFcmToken(@Path("id") id: Int, @Body tokenData: Map<String, String>): Map<String, String>
 }

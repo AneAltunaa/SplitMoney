@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.google.firebase.messaging.FirebaseMessaging
 
-
 class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewModel() {
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users
@@ -31,9 +30,6 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
         _foundUser.value = null
     }
 
-    /**
-     * Public method to clear the login error state.
-     */
     fun clearLoginError() {
         _loginError.value = null
     }
@@ -73,24 +69,20 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
                 _loggedUserId.value = user.id
                 Log.i("LOGIN_FLOW", "Login successful for user ID: ${user.id}")
             } else {
-                val error = "Invalid credentials"
+                val error = "Invalid username or password!"
                 _loginError.value = error
                 Log.e("LOGIN_FLOW", "Login failed. Error: $error")
             }
         } catch (e: Exception) {
-            _loginError.value = "Login failed: ${e.message}"
+            val error = "Login failed: ${e.message}"
+            _loginError.value = error
+            Log.e("LOGIN_FLOW", "Login failed with exception: ${e.message}")
         }
-    }
-
-    fun logout() {
-        _loggedUserId.value = null
-        _currentUser.value = null
-        _loginError.value = null
-        Log.i("LOGOUT_FLOW", "User logged out.")
     }
 
     fun updateUser(id: Int, user: User) = viewModelScope.launch { repo.updateUser(id, user) }
     fun deleteUser(id: Int) = viewModelScope.launch { repo.deleteUser(id) }
+
 
     fun registerFcmToken(userId: Int) {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
@@ -106,9 +98,6 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
             // Send token to backend
             viewModelScope.launch {
                 try {
-                    // repositoryに定義したメソッドを呼び出す
-                    // ※ ご自身のUserRepositoryの定義に合わせて repo.updateFcmToken を呼んでください
-                    // UserViewModel内で repository が private val repo で宣言されている前提です
                     repo.updateFcmToken(userId, token)
                     Log.d("FCM", "Token sent to server successfully")
                 } catch (e: Exception) {

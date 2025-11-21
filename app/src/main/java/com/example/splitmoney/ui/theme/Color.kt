@@ -12,7 +12,6 @@ val LightBackground = Color(0xFFFDFDFD)
 val LightOnPrimary = Color(0xFF126b56)
 
 
-
 val DarkPrimaryColor = Color(0xFF2FC4A5)     // πιο "calm" πράσινο-τιρκουάζ
 val DarkSecondaryColor = Color(0xFF0F5A46)   // ελαφρώς πιο σκούρο secondary
 val DarkBackground = Color(0xFF121212)

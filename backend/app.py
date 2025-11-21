@@ -11,6 +11,7 @@ try:
 except Exception as e:
     print(f"Warning: Firebase initialization failed. Notifications won't work. {e}")
 
+
 app = Flask(__name__)
 DB = "database.db"
 
@@ -23,7 +24,7 @@ def query(sql, args=(), one=False):
     conn.close()
     return (dict(rows[0]) if rows else None) if one else [dict(r) for r in rows]
 
-# --- Helper: Send Notification ---
+# --- Send Notification ---
 def send_push_notification(user_id, title, body):
     try:
         # ユーザーのトークンを取得
@@ -42,6 +43,7 @@ def send_push_notification(user_id, title, body):
             print(f"No token found for user {user_id}")
     except Exception as e:
         print(f"Failed to send notification: {e}")
+
 
 # ---------- USERS ----------
 @app.post("/users/register")
@@ -96,6 +98,9 @@ def create_group():
     cur.execute("INSERT INTO groups (name, description) VALUES (?, ?)", (d["name"], d["description"]))
     gid = cur.lastrowid
 
+    for uid in d.get("participants", []):
+        cur.execute("INSERT OR IGNORE INTO group_users (group_id, user_id) VALUES (?, ?)", (gid, uid))
+
     participants = d.get("participants", [])
     creator_id = d.get("created_by")
 
@@ -108,6 +113,7 @@ def create_group():
 
         if should_notify:
             send_push_notification(uid, "New Group Invitation", f"You have been added to group '{d['name']}'")
+
 
     conn.commit()
     conn.close()
@@ -157,22 +163,60 @@ def delete_participant():
 @app.post("/expenses")
 def add_expense():
     d = request.json
-    query("INSERT INTO expenses (group_id, description, total_amount, paid_by) VALUES (?, ?, ?, ?)",
-          (d["group_id"], d["description"], d["total_amount"], d["paid_by"]))
-    payer = query("SELECT name FROM users WHERE id=?", (d["paid_by"],), one=True)
-    payer_name = payer['name'] if payer else "Someone"
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
 
-    members = query("SELECT user_id FROM group_users WHERE group_id=?", (d["group_id"],))
 
-    for m in members:
-        if m['user_id'] != d['paid_by']:
-            send_push_notification(
-                m['user_id'],
-                "New Expense",
-                f"{payer_name} added '{d['description']}' ($ {d['total_amount']})"
-            )
+    cur.execute(
+        "INSERT INTO expenses (group_id, description, total_amount, paid_by) VALUES (?, ?, ?, ?)",
+        (d["group_id"], d["description"], d["total_amount"], d["paid_by"])
+    )
+    expense_id = cur.lastrowid
 
-    return jsonify({"message": "Expense added"})
+    shares = d.get("shares")
+
+    if shares:
+
+        for s in shares:
+            cur.execute("""
+                INSERT INTO expense_shares (expense_id, user_id, amount_owed, paid)
+                VALUES (?, ?, ?, 0)
+            """, (expense_id, s["user_id"], s["amount_owed"]))
+    else:
+
+        cur.execute("SELECT user_id FROM group_users WHERE group_id = ?", (d["group_id"],))
+        members = [r["user_id"] for r in cur.fetchall()]
+        if members:
+            share_amount = float(d["total_amount"]) / len(members)
+            for uid in members:
+                cur.execute("""
+                    INSERT INTO expense_shares (expense_id, user_id, amount_owed, paid)
+                    VALUES (?, ?, ?, 0)
+                """, (expense_id, uid, share_amount))
+
+    conn.commit()
+    conn.close()
+
+    try:
+        payer = query("SELECT name FROM users WHERE id=?", (d["paid_by"],), one=True)
+        payer_name = payer['name'] if payer else "Someone"
+
+        members = query("SELECT user_id FROM group_users WHERE group_id=?", (d["group_id"],))
+
+        for m in members:
+            if m['user_id'] != d['paid_by']:
+                send_push_notification(
+                    m['user_id'],
+                    "New Expense",
+                    f"{payer_name} added '{d['description']}' ($ {d['total_amount']})"
+                )
+    except Exception as e:
+        print(f"Notification error: {e}")
+
+    return jsonify({"message": "Expense added", "expense_id": expense_id})
+
+
 
 @app.get("/expenses/<int:gid>")
 def get_expenses_by_group(gid):
@@ -213,6 +257,7 @@ def update_share(id):
 def delete_share(id):
     query("DELETE FROM expense_shares WHERE id=?", (id,))
     return jsonify({"message": "Share deleted"})
+
 
 # ---------- GROUP BALANCES ----------
 @app.get("/groups/<int:gid>/balances")
@@ -332,6 +377,8 @@ def settle_group_debts(gid):
     conn.close()
 
     return jsonify({"message": "Group debts settled", "user_id": user_id, "group_id": gid})
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
