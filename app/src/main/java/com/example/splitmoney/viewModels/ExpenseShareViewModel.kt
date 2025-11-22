@@ -16,4 +16,12 @@ class ExpenseShareViewModel(val repo: ExpenseShareRepository = ExpenseShareRepos
     fun addShare(share: ExpenseShare) = viewModelScope.launch { repo.addShare(share) }
     fun updateShare(id: Int, share: ExpenseShare) = viewModelScope.launch { repo.updateShare(id, share) }
     fun deleteShare(id: Int) = viewModelScope.launch { repo.deleteShare(id) }
+
+    fun sendReminder(id: Int) = viewModelScope.launch {
+        try {
+            repo.sendReminder(id)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 }

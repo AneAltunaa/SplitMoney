@@ -234,6 +234,51 @@ def delete_expense(id):
     query("DELETE FROM expenses WHERE id=?", (id,))
     return jsonify({"message": "Expense deleted"})
 
+@app.post("/expense_shares/<int:id>/remind")
+def send_reminder(id):
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    try:
+        # シェア情報（借りている人、経費ID）を取得
+        share = cur.execute("SELECT user_id, expense_id FROM expense_shares WHERE id=?", (id,)).fetchone()
+        if not share:
+            return jsonify({"error": "Share not found"}), 404
+
+        debtor_id = share['user_id']
+        expense_id = share['expense_id']
+
+        # 経費情報（貸している人、内容、金額）を取得
+        expense = cur.execute("SELECT description, paid_by FROM expenses WHERE id=?", (expense_id,)).fetchone()
+        if not expense:
+            return jsonify({"error": "Expense not found"}), 404
+
+        creditor_id = expense['paid_by']
+        description = expense['description']
+
+        # 貸している人の名前を取得
+        creditor = cur.execute("SELECT name, lastname FROM users WHERE id=?", (creditor_id,)).fetchone()
+        creditor_name = f"{creditor['name']} {creditor['lastname']}" if creditor else "Someone"
+
+        # 金額を取得 (shareから再取得したほうが正確かもですが、ここではamount_owedを使います)
+        amount = cur.execute("SELECT amount_owed FROM expense_shares WHERE id=?", (id,)).fetchone()['amount_owed']
+
+        # 通知送信 (借りている人へ)
+        send_push_notification(
+            debtor_id,
+            "Payment Reminder",
+            f"{creditor_name} reminds you to pay {amount}€ for '{description}'."
+        )
+
+    except Exception as e:
+        print(f"Reminder error: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+    return jsonify({"message": "Reminder sent"})
+
 # ---------- EXPENSE SHARES ----------
 @app.post("/expense_shares")
 def add_share():
@@ -249,8 +294,37 @@ def get_shares_by_expense(eid):
 @app.put("/expense_shares/<int:id>")
 def update_share(id):
     d = request.json
-    query("""UPDATE expense_shares SET amount_owed=?, paid=? WHERE id=?""",
-          (d["amount_owed"], d["paid"], id))
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    share = cur.execute("SELECT user_id, expense_id FROM expense_shares WHERE id=?", (id,)).fetchone()
+    cur.execute("""UPDATE expense_shares SET amount_owed=?, paid=? WHERE id=?""",
+              (d["amount_owed"], d["paid"], id))
+    conn.commit()
+    if d.get("paid") == 1 and share:
+            try:
+                debtor_id = share['user_id']
+                expense_id = share['expense_id']
+
+                debtor_row = cur.execute("SELECT name, lastname FROM users WHERE id=?", (debtor_id,)).fetchone()
+                debtor_name = f"{debtor_row['name']} {debtor_row['lastname']}" if debtor_row else "Someone"
+
+                expense_row = cur.execute("SELECT description, paid_by FROM expenses WHERE id=?", (expense_id,)).fetchone()
+
+                if expense_row:
+                    creditor_id = expense_row['paid_by'] # 通知を送る相手
+                    description = expense_row['description']
+
+                    if creditor_id != debtor_id:
+                        send_push_notification(
+                            creditor_id,
+                            "Payment Received",
+                            f"{debtor_name} marked '{description}' as paid."
+                        )
+            except Exception as e:
+                print(f"Notification error in update_share: {e}")
+
+    conn.close()
     return jsonify({"message": "Share updated"})
 
 @app.delete("/expense_shares/<int:id>")
@@ -355,8 +429,10 @@ def get_group_balances(gid):
 
 @app.post("/groups/<int:gid>/settle")
 def settle_group_debts(gid):
+    print(f"--- DEBUG: Settle request received for Group {gid} ---") # ★ログ開始
     d = request.json
     user_id = d["user_id"]
+    print(f"--- DEBUG: User ID from request: {user_id} ---") # ★ログ
 
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
@@ -367,13 +443,52 @@ def settle_group_debts(gid):
         UPDATE expense_shares
         SET paid = 1
         WHERE user_id = ?
-          AND paid = 0
-          AND expense_id IN (
-              SELECT id FROM expenses WHERE group_id = ?
-          )
+        AND paid = 0
+        AND expense_id IN (
+          SELECT id FROM expenses WHERE group_id = ?
+        )
     """, (user_id, gid))
 
+
     conn.commit()
+
+    try:
+        payer_row = cur.execute("SELECT name, lastname FROM users WHERE id=?", (user_id,)).fetchone()
+        if payer_row:
+            payer_name = f"{payer_row['name']} {payer_row['lastname']}"
+            print(f"--- DEBUG: Payer Name found: {payer_name} ---")
+        else:
+            payer_name = "Someone"
+            print(f"--- DEBUG: Payer Name NOT found for ID {user_id} ---")
+
+        group_row = cur.execute("SELECT name FROM groups WHERE id=?", (gid,)).fetchone()
+        if group_row:
+            group_name = group_row['name']
+            print(f"--- DEBUG: Group Name found: {group_name} ---")
+        else:
+            group_name = "the group"
+            print(f"--- DEBUG: Group Name NOT found for ID {gid} ---")
+
+        members = cur.execute("SELECT user_id FROM group_users WHERE group_id=?", (gid,)).fetchall()
+        print(f"--- DEBUG: Total members found in group: {len(members)} ---")
+
+        for m in members:
+            target_uid = m['user_id']
+            print(f"--- DEBUG: Checking member {target_uid}... ---")
+
+            if target_uid != user_id:
+                print(f"--- DEBUG: Attempting to send notification to User {target_uid} ---") # ★ログ
+                send_push_notification(
+                    target_uid,
+                    "Debt Settled",
+                    f"{payer_name} has settled all their debts in '{group_name}'."
+                )
+            else:
+                print(f"--- DEBUG: Skipped User {target_uid} (Self) ---")
+
+    except Exception as e:
+        print(f"--- DEBUG ERROR (Notification Logic): {e} ---")
+
     conn.close()
 
     return jsonify({"message": "Group debts settled", "user_id": user_id, "group_id": gid})

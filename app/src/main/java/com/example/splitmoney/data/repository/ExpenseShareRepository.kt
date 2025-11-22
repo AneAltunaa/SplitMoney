@@ -10,4 +10,5 @@ class ExpenseShareRepository {
     suspend fun getSharesByExpense(eid: Int) = api.getSharesByExpense(eid)
     suspend fun updateShare(id: Int, share: ExpenseShare) = api.updateShare(id, share)
     suspend fun deleteShare(id: Int) = api.deleteShare(id)
+    suspend fun sendReminder(id: Int) = api.sendReminder(id)
 }

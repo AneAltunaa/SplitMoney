@@ -54,4 +54,6 @@ interface ApiService {
     ): Map<String, String>
     @PUT("users/{id}/token")
     suspend fun updateFcmToken(@Path("id") id: Int, @Body tokenData: Map<String, String>): Map<String, String>
+    @POST("expense_shares/{id}/remind")
+    suspend fun sendReminder(@Path("id") id: Int): Map<String, String>
 }

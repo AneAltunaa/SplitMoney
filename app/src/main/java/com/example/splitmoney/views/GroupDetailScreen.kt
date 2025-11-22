@@ -142,7 +142,8 @@ fun ExpandableExpenseCard(
                                 sharesForThisExpense = sharesForThisExpense.map {
                                     if (it.id == share.id) it.copy(paid = 1) else it
                                 }
-                            }
+                            },
+                            shareViewModel = shareViewModel
                         )
                         Spacer(Modifier.height(8.dp))
                     }
@@ -158,7 +159,8 @@ fun ExpenseShareItem(
     share: ExpenseShare,
     participants: List<User>,
     loggedInUserId: Int,
-    onMarkPaid: () -> Unit
+    onMarkPaid: () -> Unit,
+    shareViewModel: ExpenseShareViewModel
 ) {
     val colors = MaterialTheme.colorScheme
     val paidColor =
@@ -190,7 +192,7 @@ fun ExpenseShareItem(
                     Text("I paid")
                 }
             } else {
-                IconButton(onClick = { /* TODO: notification */ }) {
+                IconButton(onClick = { shareViewModel.sendReminder(share.id!!) }) {
                     Icon(Icons.Default.Notifications, contentDescription = "notify")
                 }
             }
