@@ -43,7 +43,9 @@ class MainActivity : ComponentActivity() {
                     val expenseShareViewModel: ExpenseShareViewModel = viewModel()
                     val expenseViewModel: ExpenseViewModel = viewModel()
                     val groupUserViewModel: GroupUserViewModel = viewModel()
-                    val userViewModel: UserViewModel = viewModel()
+                    val userViewModel: UserViewModel = viewModel(
+                        factory = UserViewModel.Factory(application)
+                    )
                     val balanceViewModel: BalanceViewModel = viewModel()
 
                     // 3. Κλήση του RootNavigation με τους νέους παραμέτρους

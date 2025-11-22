@@ -9,8 +9,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.google.firebase.messaging.FirebaseMessaging
+import android.app.Application
+import android.content.Context
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
 
-class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewModel() {
+class UserViewModel(
+    application: Application,
+    private val repo: UserRepository = UserRepository()
+): AndroidViewModel(application) {
+
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users
 
@@ -25,6 +33,14 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
 
     private val _loginError = MutableStateFlow<String?>(null)
     val loginError: StateFlow<String?> = _loginError
+
+    init {
+        val prefs = getApplication<Application>().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val id = prefs.getInt("logged_user_id", -1)
+        if (id != -1) {
+            _loggedUserId.value = id
+        }
+    }
 
     fun clearFoundUser() {
         _foundUser.value = null
@@ -67,6 +83,10 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
 
             if (user != null) {
                 _loggedUserId.value = user.id
+
+                val prefs = getApplication<Application>().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                prefs.edit().putInt("logged_user_id", user.id!!).apply()
+
                 Log.i("LOGIN_FLOW", "Login successful for user ID: ${user.id}")
             } else {
                 val error = "Invalid username or password!"
@@ -87,6 +107,10 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
         _loggedUserId.value = null
         _currentUser.value = null
         _loginError.value = null
+
+        val prefs = getApplication<Application>().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        prefs.edit().remove("logged_user_id").apply()
+
         Log.i("LOGOUT_FLOW", "User logged out.")
     }
 
@@ -112,5 +136,15 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
                 }
             }
         }
+    }
+
+    companion object {
+        fun Factory(application: Application): ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return UserViewModel(application) as T
+                }
+            }
     }
 }
