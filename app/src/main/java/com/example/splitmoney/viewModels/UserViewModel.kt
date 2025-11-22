@@ -83,6 +83,13 @@ class UserViewModel(private val repo: UserRepository = UserRepository()) : ViewM
     fun updateUser(id: Int, user: User) = viewModelScope.launch { repo.updateUser(id, user) }
     fun deleteUser(id: Int) = viewModelScope.launch { repo.deleteUser(id) }
 
+    fun logout() {
+        _loggedUserId.value = null
+        _currentUser.value = null
+        _loginError.value = null
+        Log.i("LOGOUT_FLOW", "User logged out.")
+    }
+
 
     fun registerFcmToken(userId: Int) {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->

@@ -95,6 +95,21 @@ fun UserProfileScreen(
                     ) {
                         Text("Update User")
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedButton(
+                        onClick = {
+                            userViewModel.logout()
+                        },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = colorScheme.error
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth(0.6f)
+                    ) {
+                        Text("Log Out")
+                    }
                 }
             }
         }
