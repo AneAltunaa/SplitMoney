@@ -2,12 +2,23 @@ from flask import Flask, request, jsonify
 import sqlite3
 import firebase_admin
 from firebase_admin import credentials, messaging
+import os
+import json
 
 # --- Initialization ---
 try:
-    cred = credentials.Certificate("serviceAccountKey.json")
-    firebase_admin.initialize_app(cred)
-    print("Firebase initialized successfully")
+    firebase_creds_json = os.environ.get('FIREBASE_CREDENTIALS')
+
+    if firebase_creds_json:
+        cred_dict = json.loads(firebase_creds_json)
+        cred = credentials.Certificate(cred_dict)
+        firebase_admin.initialize_app(cred)
+        print("Firebase initialized successfully from Environment Variable")
+    else:
+        cred = credentials.Certificate("serviceAccountKey.json")
+        firebase_admin.initialize_app(cred)
+        print("Firebase initialized successfully from File")
+
 except Exception as e:
     print(f"Warning: Firebase initialization failed. Notifications won't work. {e}")
 
@@ -241,7 +252,6 @@ def send_reminder(id):
     cur = conn.cursor()
 
     try:
-        # シェア情報（借りている人、経費ID）を取得
         share = cur.execute("SELECT user_id, expense_id FROM expense_shares WHERE id=?", (id,)).fetchone()
         if not share:
             return jsonify({"error": "Share not found"}), 404
@@ -249,7 +259,6 @@ def send_reminder(id):
         debtor_id = share['user_id']
         expense_id = share['expense_id']
 
-        # 経費情報（貸している人、内容、金額）を取得
         expense = cur.execute("SELECT description, paid_by FROM expenses WHERE id=?", (expense_id,)).fetchone()
         if not expense:
             return jsonify({"error": "Expense not found"}), 404
@@ -257,14 +266,11 @@ def send_reminder(id):
         creditor_id = expense['paid_by']
         description = expense['description']
 
-        # 貸している人の名前を取得
         creditor = cur.execute("SELECT name, lastname FROM users WHERE id=?", (creditor_id,)).fetchone()
         creditor_name = f"{creditor['name']} {creditor['lastname']}" if creditor else "Someone"
 
-        # 金額を取得 (shareから再取得したほうが正確かもですが、ここではamount_owedを使います)
         amount = cur.execute("SELECT amount_owed FROM expense_shares WHERE id=?", (id,)).fetchone()['amount_owed']
 
-        # 通知送信 (借りている人へ)
         send_push_notification(
             debtor_id,
             "Payment Reminder",
