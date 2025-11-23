@@ -187,13 +187,29 @@ fun ExpenseShareItem(
                 Text("Owes: ${share.amount_owed}€")
             }
 
-            if (share.user_id == loggedInUserId && share.paid == 0) {
-                Button(onClick = onMarkPaid) {
-                    Text("I paid")
+            when {
+                // 1. すでに支払い済みの場合: 何も表示しないか、「Paid」と表示する
+                share.paid == 1 -> {
+                    Text(
+                        text = "Paid",
+                        color = colors.primary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(end = 12.dp)
+                    )
                 }
-            } else {
-                IconButton(onClick = { shareViewModel.sendReminder(share.id!!) }) {
-                    Icon(Icons.Default.Notifications, contentDescription = "notify")
+                // 2. 自分の未払いの場合: 「I paid」ボタンを表示
+                share.user_id == loggedInUserId -> {
+                    Button(onClick = onMarkPaid) {
+                        Text("I paid")
+                    }
+                }
+                // 3. 他人の未払いの場合: 「催促（ベル）」ボタンを表示
+                else -> {
+                    IconButton(onClick = {
+                        shareViewModel.sendReminder(share.id!!)
+                    }) {
+                        Icon(Icons.Default.Notifications, contentDescription = "notify")
+                    }
                 }
             }
         }
