@@ -31,7 +31,8 @@ class ExpenseViewModel(
         repo.updateExpense(id, expense)
     }
 
-    fun deleteExpense(id: Int) = viewModelScope.launch {
-        repo.deleteExpense(id)
+    fun deleteExpense(groupId: Int, expenseId: Int) = viewModelScope.launch {
+        repo.deleteExpense(expenseId)
+        loadExpensesByGroup(groupId)
     }
 }

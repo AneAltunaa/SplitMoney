@@ -10,9 +10,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 
 @Composable
 fun LoginScreen(
@@ -79,8 +80,8 @@ fun LoginScreen(
                 CustomTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = "Password"
-                    // visualTransformation = PasswordVisualTransformation()
+                    label = "Password",
+                    visualTransformation = PasswordVisualTransformation()
                 )
 
                 if (loginError != null) {
