@@ -80,6 +80,20 @@ fun AppNavigation(
                 )
             }
         }
+        composable("editGroup/{groupId}") { backStackEntry ->
+            val groupId = backStackEntry.arguments?.getString("groupId")!!.toInt()
+
+            EditGroupScreen(
+                groupId = groupId,
+                groupUserViewModel = groupUserViewModel,
+                expenseViewModel = expenseViewModel,
+                shareViewModel = expenseShareViewModel,
+                userViewModel = userViewModel,
+                onBack = { navController.popBackStack() },
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
+            )
+        }
 
         composable("addExpense/{groupId}") { backStack ->
             val groupId = backStack.arguments?.getString("groupId")?.toInt()

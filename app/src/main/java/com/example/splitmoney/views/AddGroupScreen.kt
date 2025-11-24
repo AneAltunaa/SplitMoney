@@ -21,6 +21,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.graphics.SolidColor
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.splitmoney.ui.theme.SplitMoneyTheme
 import com.example.splitmoney.viewModels.GroupViewModel
@@ -255,10 +256,17 @@ fun AddGroupScreen(
                 }
 
                 Spacer(Modifier.height(8.dp))
-
-                OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = onBack,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f),
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
                     Text("Cancel")
                 }
+
                 Spacer(Modifier.height(8.dp))
             }
         }

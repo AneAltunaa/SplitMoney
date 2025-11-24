@@ -24,14 +24,13 @@ fun BottomBar(navController: NavController, currentScreen: String, modifier: Mod
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
-        Icon(Icons.Filled.AccountCircle, "Profile", tint = colors.onPrimary, modifier = Modifier.clickable {
-            if (currentScreen != "profile") navController.navigate("profile") { launchSingleTop = true }
-        })
         Icon(Icons.Filled.Home, "Home", tint = colors.onPrimary, modifier = Modifier.clickable {
             if (currentScreen != "home") navController.navigate("main") { launchSingleTop = true }
         })
-        Icon(Icons.Filled.Settings, "Settings", tint = colors.onPrimary, modifier = Modifier.clickable {
-            if (currentScreen != "settings") navController.navigate("settings") { launchSingleTop = true }
+
+        Icon(Icons.Filled.AccountCircle, "Profile", tint = colors.onPrimary, modifier = Modifier.clickable {
+            if (currentScreen != "profile") navController.navigate("profile") { launchSingleTop = true }
         })
+
     }
 }

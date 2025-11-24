@@ -87,29 +87,28 @@ fun UserProfileScreen(
 
                     Button(
                         onClick = { navController.navigate("updateUser") },
+                        modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = colorScheme.primary,
                             contentColor = colorScheme.onPrimary
-                        ),
-                        shape = RoundedCornerShape(16.dp)
+                        )
                     ) {
                         Text("Update User")
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    OutlinedButton(
-                        onClick = {
-                            userViewModel.logout()
-                        },
-                        colors = ButtonDefaults.outlinedButtonColors(
+                    Button(
+                        onClick = { userViewModel.logout() },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorScheme.error.copy(alpha = 0.20f),
                             contentColor = colorScheme.error
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.fillMaxWidth(0.6f)
+                        )
                     ) {
                         Text("Log Out")
                     }
+
                 }
             }
         }

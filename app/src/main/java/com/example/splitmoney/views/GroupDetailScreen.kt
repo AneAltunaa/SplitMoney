@@ -319,7 +319,7 @@ fun GroupDetailScreen(
                             Spacer(Modifier.height(12.dp))
 
                             Button(
-                                onClick = { /* TODO: Edit group */ },
+                                onClick = { navController.navigate("editGroup/$groupId") },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text("Edit Group")
