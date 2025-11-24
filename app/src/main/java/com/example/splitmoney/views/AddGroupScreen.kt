@@ -121,10 +121,18 @@ fun AddGroupScreen(
     var description by remember { mutableStateOf("") }
     var emailToAdd by remember { mutableStateOf("") }
     var errorMsg by remember { mutableStateOf<String?>(null) }
+    var successMsg by remember { mutableStateOf<String?>(null) }
+    var groupCreated by remember { mutableStateOf(false) }
 
     val foundUser by userViewModel.foundUser.collectAsState()
     val currentUser by userViewModel.currentUser.collectAsState()
     var members by remember { mutableStateOf(mutableListOf<User>()) }
+    LaunchedEffect(groupCreated) {
+        if (groupCreated) {
+            kotlinx.coroutines.delay(1500)
+            onBack()
+        }
+    }
 
     LaunchedEffect(loggedInUserId) { userViewModel.loadUserById(loggedInUserId) }
     LaunchedEffect(currentUser) {
@@ -229,7 +237,21 @@ fun AddGroupScreen(
                     }
                 }
 
-                errorMsg?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
+                successMsg?.let {
+                    Text(
+                        it,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+
+                errorMsg?.let {
+                    Text(
+                        it,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
 
                 Spacer(Modifier.height(16.dp))
 
@@ -246,8 +268,13 @@ fun AddGroupScreen(
                         )
 
                         groupViewModel.createGroup(group,
-                            onSuccess = { onBack() },
-                            onError = { msg -> errorMsg = "Error: $msg" }
+                            onSuccess = {
+                                errorMsg = null
+                                successMsg = "Group created successfully"
+                                groupCreated = true},
+                            onError = { msg ->
+                                successMsg = null
+                                errorMsg = "Error: $msg" }
                         )
                     },
                     modifier = Modifier.fillMaxWidth()
