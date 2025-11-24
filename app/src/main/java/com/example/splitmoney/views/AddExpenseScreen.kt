@@ -3,8 +3,6 @@ package com.example.splitmoney.views
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -13,6 +11,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -28,8 +27,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.splitmoney.data.model.ExpenseRequest
@@ -37,7 +38,6 @@ import com.example.splitmoney.data.model.ExpenseShareRequest
 import com.example.splitmoney.viewModels.ExpenseViewModel
 import com.example.splitmoney.viewModels.GroupUserViewModel
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
 import kotlin.math.abs
 
 enum class SplitType {
@@ -59,12 +59,14 @@ fun AddExpenseScreen(
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
+    // Συμμετέχοντες στο group
     val participants by groupUserViewModel.participants.collectAsState()
 
     LaunchedEffect(groupId) {
         groupUserViewModel.loadParticipants(groupId)
     }
 
+    // State φόρμας
     var description by remember { mutableStateOf("") }
     var totalAmountText by remember { mutableStateOf("") }
     var selectedPayerId by remember { mutableStateOf<Int?>(null) }
@@ -75,6 +77,7 @@ fun AddExpenseScreen(
     var selectedUserIds by remember { mutableStateOf<Set<Int>>(emptySet()) }
     var customAmounts by remember { mutableStateOf<Map<Int, String>>(emptyMap()) }
 
+    // Default payer + default selected participants
     LaunchedEffect(participants) {
         if (selectedPayerId == null && participants.isNotEmpty()) {
             selectedPayerId = participants.find { it.id == loggedInUserId }?.id
@@ -110,6 +113,7 @@ fun AddExpenseScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // Περιγραφή
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
@@ -129,6 +133,7 @@ fun AddExpenseScreen(
             )
 
             Spacer(Modifier.height(16.dp))
+
 
             Text("Who paid?", color = colors.onBackground)
             Spacer(Modifier.height(4.dp))
@@ -169,6 +174,7 @@ fun AddExpenseScreen(
 
             Spacer(Modifier.height(16.dp))
 
+
             Text("Split type", color = colors.onBackground)
             Spacer(Modifier.height(8.dp))
 
@@ -185,7 +191,9 @@ fun AddExpenseScreen(
                         selectedLabelColor = colors.onPrimary,
                         containerColor = colors.surface,
                         labelColor = colors.onSurface
-                    )
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+                    
                 )
                 FilterChip(
                     selected = splitType == SplitType.CUSTOM,
@@ -195,17 +203,19 @@ fun AddExpenseScreen(
                         selectedContainerColor = colors.primary,
                         selectedLabelColor = colors.onPrimary,
                         containerColor = colors.surface,
-                        labelColor = colors.onSurface
-                    )
+                        labelColor = colors.onSurface,
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+
                 )
             }
 
             Spacer(Modifier.height(16.dp))
 
+            // Συμμετέχοντες
             Text("Participants", color = colors.onBackground)
             Spacer(Modifier.height(8.dp))
 
-            // 👇 Αντί για LazyColumn, απλό Column που scrollάρει μαζί με όλα
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -273,6 +283,7 @@ fun AddExpenseScreen(
 
             Spacer(Modifier.height(12.dp))
 
+            // Μηνύματα
             successMsg?.let {
                 Text(
                     it,
@@ -291,13 +302,85 @@ fun AddExpenseScreen(
 
             Spacer(Modifier.height(8.dp))
 
+            // Save
             Button(
                 onClick = {
-                    // ... εδώ αφήνουμε την ίδια λογική validation + δημιουργίας ExpenseRequest
-                    // (δεν την επαναλαμβάνω για να μην σε κουράσω, αλλά δουλεύει 1:1 όπως πριν)
+                    errorMsg = null
+                    successMsg = null
+
+                    val total = totalAmountText.toDoubleOrNull()
+                    if (description.isBlank()) {
+                        errorMsg = "Description cannot be empty"
+                        return@Button
+                    }
+                    if (total == null || total <= 0.0) {
+                        errorMsg = "Enter a valid amount"
+                        return@Button
+                    }
+                    if (selectedPayerId == null) {
+                        errorMsg = "Select who paid"
+                        return@Button
+                    }
+                    if (selectedUserIds.isEmpty()) {
+                        errorMsg = "Select at least one participant"
+                        return@Button
+                    }
+
+                    val shares: Map<Int, Double> = when (splitType) {
+                        SplitType.EQUAL -> {
+                            val perPerson = total / selectedUserIds.size
+                            selectedUserIds.associateWith { perPerson }
+                        }
+
+                        SplitType.CUSTOM -> {
+                            val parsed = selectedUserIds.associateWith { uid ->
+                                customAmounts[uid]?.toDoubleOrNull() ?: -1.0
+                            }
+
+                            if (parsed.values.any { it < 0.0 }) {
+                                errorMsg = "Enter valid amounts for all selected users"
+                                return@Button
+                            }
+
+                            val sum = parsed.values.sum()
+                            if (abs(sum - total) > 0.01) {
+                                errorMsg =
+                                    "Custom amounts must sum up to total (${String.format("%.2f", total)})"
+                                return@Button
+                            }
+
+                            parsed
+                        }
+                    }
+
+                    val request = ExpenseRequest(
+                        group_id = groupId,
+                        description = description,
+                        total_amount = total,
+                        paid_by = selectedPayerId!!,
+                        shares = shares.map { (userId, amount) ->
+                            ExpenseShareRequest(
+                                user_id = userId,
+                                amount_owed = amount
+                            )
+                        }
+                    )
+
+                    scope.launch {
+                        try {
+                            expenseViewModel.addExpense(request)
+                            successMsg = "Expense saved successfully"
+                            errorMsg = null
+                            onBack()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            successMsg = null
+                            errorMsg = "Failed to save expense: ${e.message}"
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colors.primary,
                     contentColor = colors.onPrimary
@@ -308,10 +391,11 @@ fun AddExpenseScreen(
 
             Spacer(Modifier.height(8.dp))
 
+            // Cancel
             OutlinedButton(
                 onClick = onBack,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(20.dp)
             ) {
                 Text("Cancel")
             }
