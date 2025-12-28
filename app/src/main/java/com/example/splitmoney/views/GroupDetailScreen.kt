@@ -15,7 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowRight
@@ -237,6 +240,10 @@ fun GroupDetailScreen(
     loggedInUserId: Int
 ) {
     val colors = MaterialTheme.colorScheme
+
+    var expandedMembers by remember { mutableStateOf(false) }
+    var expandedExpenses by remember { mutableStateOf(false) }
+
     val group by groupViewModel.selectedGroup.collectAsState()
     val participants by groupUserViewModel.participants.collectAsState()
     val expenses by expenseViewModel.expenses.collectAsState()
@@ -249,141 +256,161 @@ fun GroupDetailScreen(
 
     if (group == null) {
         Text("Loading...", modifier = Modifier.padding(16.dp))
-        return
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background)
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+    else{
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(colors.background)
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
 
-            AppTopBar(isDarkTheme = isDarkTheme, onToggleTheme = onToggleTheme)
+                AppTopBar(isDarkTheme = isDarkTheme, onToggleTheme = onToggleTheme)
 
-            Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(8.dp))
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
 
-                // -------------------------------
-                // 1) GROUP INFO + MEMBERS
-                // -------------------------------
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                    // -------------------------------
+                    // 1) GROUP INFO + MEMBERS
+                    // -------------------------------
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expandedMembers = !expandedMembers },
+                            colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
 
-                            Text(
-                                group!!.name,
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = colors.onSurface
-                            )
-
-                            Spacer(Modifier.height(8.dp))
-
-                            Text(
-                                group!!.description,
-                                fontSize = 16.sp,
-                                color = colors.onSurfaceVariant
-                            )
-
-                            Spacer(Modifier.height(16.dp))
-
-                            // 🔹 View Balances button ΠΑΝΩ ΠΑΝΩ (στο group card)
-                            Button(
-                                onClick = { navController.navigate("balances/$groupId") },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("View Balances")
-                            }
-
-                            Spacer(Modifier.height(16.dp))
-
-                            // Members
-                            Text("Members", fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(8.dp))
-
-                            participants.forEach { user ->
-                                MemberCard("${user.name} ${user.lastname}")
-                                Spacer(Modifier.height(8.dp))
-                            }
-
-                            Spacer(Modifier.height(12.dp))
-
-                            Button(
-                                onClick = { navController.navigate("editGroup/$groupId") },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Edit Group")
-                            }
-                        }
-                    }
-                }
-
-                // -------------------------------
-                // EXPENSES
-                // -------------------------------
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-
-                            Text(
-                                "Expenses",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(Modifier.height(8.dp))
-
-                            // 🔹 Create Expense ΚΑΤΩ ΑΠΟ ΤΟΝ TITLE "Expenses"
-                            Button(
-                                onClick = { navController.navigate("addExpense/$groupId") },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Create Expense")
-                            }
-
-                            Spacer(Modifier.height(12.dp))
-
-                            expenses.forEach { expense ->
-                                ExpandableExpenseCard(
-                                    expense = expense,
-                                    groupId = groupId,
-                                    shareViewModel = shareViewModel,
-                                    expenseViewModel = expenseViewModel,
-                                    participants = participants,
-                                    colors = colors,
-                                    isDarkTheme = isDarkTheme,
-                                    onToggleTheme = onToggleTheme,
-                                    loggedInUserId = loggedInUserId
+                                Text(
+                                    group!!.name,
+                                    fontSize = 28.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = colors.onSurface
                                 )
-                                Spacer(Modifier.height(12.dp))
+
+                                Spacer(Modifier.height(8.dp))
+
+                                Text(
+                                    group!!.description,
+                                    fontSize = 16.sp,
+                                    color = colors.onSurfaceVariant
+                                )
+
+                                Spacer(Modifier.height(16.dp))
+
+                                // 🔹 View Balances button ΠΑΝΩ ΠΑΝΩ (στο group card)
+                                Button(
+                                    onClick = { navController.navigate("balances/$groupId") },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("View Balances")
+                                }
+
+                                Spacer(Modifier.height(16.dp))
+
+                                // Members
+                                AnimatedVisibility(visible = expandedMembers) {
+                                    Column {
+                                        Text("Members", fontWeight = FontWeight.Bold)
+                                        Spacer(Modifier.height(8.dp))
+
+                                        for (user in participants) {
+                                            MemberCard("${user.name} ${user.lastname}")
+                                            Spacer(Modifier.height(8.dp))
+                                        }
+
+                                        Spacer(Modifier.height(12.dp))
+
+                                        Button(
+                                            onClick = { navController.navigate("editGroup/$groupId") },
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text("Edit Group")
+                                        }
+                                    }
+                                }
+
+
+
+
                             }
                         }
                     }
-                }
 
-                item { Spacer(Modifier.height(80.dp)) }
+                    // -------------------------------
+                    // EXPENSES
+                    // -------------------------------
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expandedExpenses = !expandedExpenses },
+                            colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+
+                                Text(
+                                    "Expenses",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+
+                                Spacer(Modifier.height(8.dp))
+
+                                // 🔹 Create Expense ΚΑΤΩ ΑΠΟ ΤΟΝ TITLE "Expenses"
+                                Button(
+                                    onClick = { navController.navigate("addExpense/$groupId") },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("Create Expense")
+                                }
+
+                                Spacer(Modifier.height(12.dp))
+
+                                AnimatedVisibility(visible = expandedExpenses){
+                                    Column{
+                                        expenses.forEach { expense ->
+                                            ExpandableExpenseCard(
+                                                expense = expense,
+                                                groupId = groupId,
+                                                shareViewModel = shareViewModel,
+                                                expenseViewModel = expenseViewModel,
+                                                participants = participants,
+                                                colors = colors,
+                                                isDarkTheme = isDarkTheme,
+                                                onToggleTheme = onToggleTheme,
+                                                loggedInUserId = loggedInUserId
+                                            )
+                                            Spacer(Modifier.height(12.dp))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    item { Spacer(Modifier.height(80.dp)) }
+                }
             }
+
+            BottomBar(
+                navController = navController,
+                currentScreen = "groupDetail",
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
 
-        BottomBar(
-            navController = navController,
-            currentScreen = "groupDetail",
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
     }
+
+
 }
 
 
