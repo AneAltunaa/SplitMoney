@@ -193,7 +193,7 @@ fun AddExpenseScreen(
                         labelColor = colors.onSurface
                     ),
                     shape = RoundedCornerShape(20.dp)
-                    
+
                 )
                 FilterChip(
                     selected = splitType == SplitType.CUSTOM,
@@ -392,10 +392,13 @@ fun AddExpenseScreen(
             Spacer(Modifier.height(8.dp))
 
             // Cancel
-            OutlinedButton(
+            Button(
                 onClick = onBack,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f),
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             ) {
                 Text("Cancel")
             }

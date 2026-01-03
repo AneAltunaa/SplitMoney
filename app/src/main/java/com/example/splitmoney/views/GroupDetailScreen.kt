@@ -1,7 +1,12 @@
 package com.example.splitmoney.views
 
+
+import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowRight
@@ -38,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,11 +52,12 @@ import androidx.navigation.NavController
 import com.example.splitmoney.data.model.Expense
 import com.example.splitmoney.data.model.ExpenseShare
 import com.example.splitmoney.data.model.User
+import com.example.splitmoney.viewModels.BalanceViewModel
 import com.example.splitmoney.viewModels.ExpenseShareViewModel
 import com.example.splitmoney.viewModels.ExpenseViewModel
 import com.example.splitmoney.viewModels.GroupUserViewModel
 import com.example.splitmoney.viewModels.GroupViewModel
-
+//
 @Composable
 fun MemberCard(name: String) {
     Card(
@@ -211,7 +219,7 @@ fun ExpenseShareItem(
                         Text("I paid")
                     }
                 }
-                // 3. 他人の未払いの場合: 「催促（ベル）」ボタンを表示
+       
                 else -> {
                     IconButton(onClick = {
                         shareViewModel.sendReminder(share.id!!)
@@ -231,6 +239,7 @@ fun GroupDetailScreen(
     groupUserViewModel: GroupUserViewModel,
     expenseViewModel: ExpenseViewModel,
     shareViewModel: ExpenseShareViewModel,
+    balanceViewModel: BalanceViewModel,
     navController: NavController,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
@@ -240,151 +249,316 @@ fun GroupDetailScreen(
     val group by groupViewModel.selectedGroup.collectAsState()
     val participants by groupUserViewModel.participants.collectAsState()
     val expenses by expenseViewModel.expenses.collectAsState()
+    val balancesState by balanceViewModel.balances.collectAsState()
+
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    val tabs = listOf("Expenses", "Balances", "Group Info")
+
+    val cardColors = CardDefaults.cardColors(
+        containerColor = colors.onPrimary,
+        contentColor = colors.primary
+    )
+    val cardElevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
 
     LaunchedEffect(groupId) {
         groupViewModel.loadGroupById(groupId)
         groupUserViewModel.loadParticipants(groupId)
         expenseViewModel.loadExpensesByGroup(groupId)
+        balanceViewModel.loadBalances(groupId)
     }
 
     if (group == null) {
-        Text("Loading...", modifier = Modifier.padding(16.dp))
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = colors.primary)
+        }
         return
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background)
-    ) {
+    Box(modifier = Modifier.fillMaxSize().background(colors.background)) {
         Column(modifier = Modifier.fillMaxSize()) {
 
             AppTopBar(isDarkTheme = isDarkTheme, onToggleTheme = onToggleTheme)
 
-            Spacer(Modifier.height(8.dp))
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                containerColor = colors.surfaceVariant,
+                contentColor = colors.primary
             ) {
-
-                // -------------------------------
-                // 1) GROUP INFO + MEMBERS
-                // -------------------------------
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-
-                            Text(
-                                group!!.name,
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = colors.onSurface
-                            )
-
-                            Spacer(Modifier.height(8.dp))
-
-                            Text(
-                                group!!.description,
-                                fontSize = 16.sp,
-                                color = colors.onSurfaceVariant
-                            )
-
-                            Spacer(Modifier.height(16.dp))
-
-                            // 🔹 View Balances button ΠΑΝΩ ΠΑΝΩ (στο group card)
-                            Button(
-                                onClick = { navController.navigate("balances/$groupId") },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("View Balances")
-                            }
-
-                            Spacer(Modifier.height(16.dp))
-
-                            // Members
-                            Text("Members", fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(8.dp))
-
-                            participants.forEach { user ->
-                                MemberCard("${user.name} ${user.lastname}")
-                                Spacer(Modifier.height(8.dp))
-                            }
-
-                            Spacer(Modifier.height(12.dp))
-
-                            Button(
-                                onClick = { navController.navigate("editGroup/$groupId") },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Edit Group")
-                            }
-                        }
-                    }
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(title, fontWeight = FontWeight.Bold) }
+                    )
                 }
-
-                // -------------------------------
-                // EXPENSES
-                // -------------------------------
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-
-                            Text(
-                                "Expenses",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(Modifier.height(8.dp))
-
-                            // 🔹 Create Expense ΚΑΤΩ ΑΠΟ ΤΟΝ TITLE "Expenses"
-                            Button(
-                                onClick = { navController.navigate("addExpense/$groupId") },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Create Expense")
-                            }
-
-                            Spacer(Modifier.height(12.dp))
-
-                            expenses.forEach { expense ->
-                                ExpandableExpenseCard(
-                                    expense = expense,
-                                    groupId = groupId,
-                                    shareViewModel = shareViewModel,
-                                    expenseViewModel = expenseViewModel,
-                                    participants = participants,
-                                    colors = colors,
-                                    isDarkTheme = isDarkTheme,
-                                    onToggleTheme = onToggleTheme,
-                                    loggedInUserId = loggedInUserId
-                                )
-                                Spacer(Modifier.height(12.dp))
-                            }
-                        }
-                    }
-                }
-
-                item { Spacer(Modifier.height(80.dp)) }
             }
-        }
 
-        BottomBar(
-            navController = navController,
-            currentScreen = "groupDetail",
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+            Box(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
+                when (selectedTabIndex) {
+
+                    0 -> {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            item { Spacer(Modifier.height(8.dp)) }
+                            item {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = cardColors,
+                                    elevation = cardElevation
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(
+                                            "Expenses",
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(Modifier.height(12.dp))
+                                        Button(
+                                            onClick = { navController.navigate("addExpense/$groupId") },
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Icon(Icons.Default.Add, contentDescription = null)
+                                            Spacer(Modifier.width(8.dp))
+                                            Text("Create Expense")
+                                        }
+                                        Spacer(Modifier.height(16.dp))
+                                        expenses.forEach { expense ->
+                                            ExpandableExpenseCard(
+                                                expense,
+                                                groupId,
+                                                shareViewModel,
+                                                expenseViewModel,
+                                                participants,
+                                                colors,
+                                                isDarkTheme,
+                                                onToggleTheme,
+                                                loggedInUserId
+                                            )
+                                            Spacer(Modifier.height(12.dp))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+                    1 -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            item { Spacer(Modifier.height(8.dp)) }
+                            item {
+                                val balances = balancesState
+                                if (balances == null) {
+                                    Text("Loading...", modifier = Modifier.padding(16.dp))
+                                } else {
+                                    Column {
+
+
+                                        Card(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = cardColors,
+                                            elevation = cardElevation
+                                        ) {
+                                            Column(modifier = Modifier.padding(16.dp)) {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Icon(
+                                                        Icons.Default.AccountBalanceWallet,
+                                                        contentDescription = null
+                                                    )
+                                                    Spacer(Modifier.width(8.dp))
+                                                    Text(
+                                                        "Group Summary",
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 18.sp
+                                                    )
+                                                }
+                                                Spacer(Modifier.height(16.dp))
+                                                balances.net_balances.forEachIndexed { index, nb ->
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth()
+                                                            .padding(vertical = 8.dp),
+                                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        Text(
+                                                            nb.name,
+                                                            fontWeight = FontWeight.Medium
+                                                        )
+                                                        val isPos = nb.balance > 0
+                                                        val isNeg = nb.balance < 0
+                                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                                            Text(
+                                                                text = if (isPos) "+${
+                                                                    "%.2f".format(
+                                                                        nb.balance
+                                                                    )
+                                                                } €" else if (isNeg) "${
+                                                                    "%.2f".format(
+                                                                        nb.balance
+                                                                    )
+                                                                } €" else "Settled",
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = if (isPos) androidx.compose.ui.graphics.Color(
+                                                                    0xFF4CAF50
+                                                                ) else if (isNeg) colors.error else colors.primary.copy(
+                                                                    0.6f
+                                                                )
+                                                            )
+                                                            Spacer(Modifier.width(4.dp))
+                                                            Icon(
+                                                                imageVector = if (isPos) Icons.Default.TrendingUp else if (isNeg) Icons.Default.TrendingDown else Icons.Default.CheckCircle,
+                                                                contentDescription = null,
+                                                                modifier = Modifier.size(18.dp),
+                                                                tint = if (isPos) androidx.compose.ui.graphics.Color(
+                                                                    0xFF4CAF50
+                                                                ) else if (isNeg) colors.error else colors.primary.copy(
+                                                                    0.6f
+                                                                )
+                                                            )
+                                                        }
+                                                    }
+                                                    if (index < balances.net_balances.size - 1) HorizontalDivider(
+                                                        thickness = 0.5.dp,
+                                                        color = colors.primary.copy(0.1f)
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        Spacer(Modifier.height(16.dp))
+
+
+                                        Card(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = cardColors,
+                                            elevation = cardElevation
+                                        ) {
+                                            Column(modifier = Modifier.padding(16.dp)) {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Icon(
+                                                        Icons.Default.SwapHoriz,
+                                                        contentDescription = null,
+                                                        tint = colors.primary
+                                                    )
+                                                    Spacer(Modifier.width(8.dp))
+                                                    Text(
+                                                        "Suggested Payments",
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 18.sp
+                                                    )
+                                                }
+
+                                                Spacer(Modifier.height(12.dp))
+
+                                                if (balances.settlements.isEmpty()) {
+                                                    Text(
+                                                        "Everyone is even! 🎉",
+                                                        modifier = Modifier.padding(vertical = 8.dp)
+                                                    )
+                                                } else {
+                                                    balances.settlements.forEach { s ->
+                                                        val fromName =
+                                                            balances.net_balances.find { it.user_id == s.from }?.name
+                                                                ?: "User"
+                                                        val toName =
+                                                            balances.net_balances.find { it.user_id == s.to }?.name
+                                                                ?: "User"
+
+                                                        Surface(
+                                                            color = colors.primary.copy(alpha = 0.05f),
+                                                            shape = RoundedCornerShape(12.dp),
+                                                            modifier = Modifier.fillMaxWidth()
+                                                                .padding(vertical = 6.dp)
+                                                        ) {
+                                                            Row(
+                                                                modifier = Modifier.padding(16.dp)
+                                                                    .fillMaxWidth(),
+                                                                verticalAlignment = Alignment.CenterVertically
+                                                            ) {
+
+                                                                Column(modifier = Modifier.weight(1f)) {
+                                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                                        Spacer(Modifier.width(4.dp))
+                                                                        Text(
+                                                                            text = fromName,
+                                                                            fontWeight = FontWeight.Bold,
+                                                                            fontSize = 14.sp
+                                                                        )
+                                                                    }
+
+                                                                    Icon(
+                                                                        Icons.Default.ArrowDownward,
+                                                                        contentDescription = null,
+                                                                        modifier = Modifier.padding(
+                                                                            start = 14.dp
+                                                                        ).size(14.dp),
+                                                                        tint = colors.primary.copy(
+                                                                            alpha = 0.5f
+                                                                        )
+                                                                    )
+
+                                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                                        Spacer(Modifier.width(4.dp))
+                                                                        Text(
+                                                                            text = toName,
+                                                                            fontWeight = FontWeight.Bold,
+                                                                            fontSize = 14.sp
+                                                                        )
+                                                                    }
+                                                                }
+
+                                                                Column(horizontalAlignment = Alignment.End) {
+                                                                    Text(
+                                                                        text = "${"%.2f".format(s.amount)} €",
+                                                                        fontWeight = FontWeight.ExtraBold,
+                                                                        color = colors.primary,
+                                                                        fontSize = 18.sp
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } // 3) TAB: GROUP INFO
+                    2 -> {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            item { Spacer(Modifier.height(8.dp)) }
+                            item {
+                                Card(modifier = Modifier.fillMaxWidth(), colors = cardColors, elevation = cardElevation) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(group!!.name, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                                        Text(group!!.description)
+                                        Spacer(Modifier.height(20.dp))
+                                        Text("Members", fontWeight = FontWeight.Bold)
+                                        participants.forEach { user -> MemberCard("${user.name} ${user.lastname}"); Spacer(Modifier.height(8.dp)) }
+                                        Spacer(Modifier.height(16.dp))
+                                        Button(onClick = { navController.navigate("editGroup/$groupId") }, modifier = Modifier.fillMaxWidth()) {
+                                            Text("Edit Group")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Button(
+                onClick = { navController.popBackStack() },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Text("Back")
+            }
+            Spacer(Modifier.height(80.dp))
+        }
+        BottomBar(navController = navController, currentScreen = "groupDetail", modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
-
-
-
